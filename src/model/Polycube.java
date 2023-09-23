@@ -33,7 +33,7 @@ public class Polycube implements Comparable<Polycube> {
         }
 
         this.addCube(newCubeCoordinate);
-        this.minimizeGrid();
+        this.reshapeGrid();
         this.polycubeValue = -1;
     }
 
@@ -81,18 +81,6 @@ public class Polycube implements Comparable<Polycube> {
 
     public boolean[][][] getGrid() {
         return this.grid;
-    }
-
-    public void rotateAroundX() {
-        rotate(0, 2, 1);
-    }
-
-    public void rotateAroundY() {
-        rotate(2, 0, 1);
-    }
-
-    public void rotateAroundZ() {
-        rotate(1, 0, 2);
     }
 
     private void rotate(int axis1, int axis2, int axis3) {
