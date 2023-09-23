@@ -2,6 +2,11 @@ package model;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 public class Polycube implements Comparable<Polycube> {
 
@@ -203,39 +208,40 @@ public class Polycube implements Comparable<Polycube> {
         grid = newGrid;
     }
 
-    public Polycube rotateToCanonicalState() {
-        ArrayList<Polycube> rotatedPolycubes = new ArrayList<>();
+    public void rotateToCanonicalState() {
+        ExecutorService executor = Executors.newFixedThreadPool(24);
 
-        // Rotate 4 times around x-axis
-        for (int x = 0; x < 4; x++) {
-            Polycube rotatedX = (x == 0) ? this.clone() : rotatedPolycubes.get(rotatedPolycubes.size() - 1).clone();
-            rotatedX.rotateAroundX();
+        List<Callable<Polycube>> tasks = IntStream.range(0, 24)
+                .mapToObj(i -> (Callable<Polycube>) () -> {
+                    Polycube clone = this.clone();
+                    int axis1 = i % 4;          // 4 rotations around the X-axis
+                    int axis2 = (i / 4) % 4;    // 4 rotations around the Y-axis
+                    int axis3 = (i / 16) % 2;   // 2 rotations around the Z-axis
 
-            // Rotate 4 times around y-axis
-            for (int y = 0; y < 4; y++) {
-                Polycube rotatedY = (y == 0) ? rotatedX.clone() : rotatedPolycubes.get(rotatedPolycubes.size() - 1).clone();
-                rotatedY.rotateAroundY();
+                    clone.rotate(axis1, axis2, axis3);
+                    return clone;
+                })
+                .collect(Collectors.toList());
 
-                rotatedPolycubes.add(rotatedY);
-            }
+        try {
+            Polycube canonicalPolycube = executor.invokeAll(tasks).parallelStream()
+                    .map(future -> {
+                        try {
+                            return future.get();
+                        } catch (Exception e) {
+                            throw new RuntimeException(e);
+                        }
+                    })
+                    .min(Polycube::compareTo).orElse(this);
+
+            executor.shutdown();
+
+            this.grid = canonicalPolycube.getGrid();
+
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+            executor.shutdown();
         }
-
-        // Rotate 2 more times around z-axis (for the two remaining unique rotations)
-        Polycube baseZ = this.clone();
-        for (int z = 0; z < 2; z++) {
-            Polycube rotatedZ = (z == 0) ? baseZ : rotatedPolycubes.get(rotatedPolycubes.size() - 1).clone();
-            rotatedZ.rotateAroundZ();
-
-            // Rotate 4 times around x-axis
-            for (int x = 0; x < 4; x++) {
-                Polycube rotatedX = (x == 0) ? rotatedZ.clone() : rotatedPolycubes.get(rotatedPolycubes.size() - 1).clone();
-                rotatedX.rotateAroundX();
-
-                rotatedPolycubes.add(rotatedX);
-            }
-        }
-
-        return rotatedPolycubes.stream().min(Polycube::compareTo).orElse(this);
     }
 
     @Override
@@ -287,5 +293,63 @@ public class Polycube implements Comparable<Polycube> {
             }
         }
         return sb.toString();
+    }
+
+    @Override
+    public int hashCode() {
+        int prime = 31;
+        int result = 1;
+
+        // Hash polycubeValue
+        result = prime * result + (int) (polycubeValue ^ (polycubeValue >>> 32));
+
+        // Hash the grid
+        for (boolean[][] booleans : grid) {
+            for (int y = 0; y < grid[0].length; y++) {
+                for (int z = 0; z < grid[0][0].length; z++) {
+                    result = prime * result + (booleans[y][z] ? 1231 : 1237);
+                }
+            }
+        }
+
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        // Check if the object is compared with itself
+        if (this == obj) {
+            return true;
+        }
+
+        // Check if the object is an instance of Polycube
+        if (!(obj instanceof Polycube other)) {
+            return false;
+        }
+
+        // Check if polycube values are the same
+        if(this.polycubeValue != other.polycubeValue) {
+            return false;
+        }
+
+        // Check if dimensions of grid are the same
+        if (grid.length != other.grid.length ||
+                grid[0].length != other.grid[0].length ||
+                grid[0][0].length != other.grid[0][0].length) {
+            return false;
+        }
+
+        // Compare grid values
+        for (int x = 0; x < grid.length; x++) {
+            for (int y = 0; y < grid[0].length; y++) {
+                for (int z = 0; z < grid[0][0].length; z++) {
+                    if (grid[x][y][z] != other.grid[x][y][z]) {
+                        return false;
+                    }
+                }
+            }
+        }
+
+        return true;
     }
 }
