@@ -31,21 +31,21 @@ public class Coordinate {
         int temp;
 
         // Apply rotations around the X-axis
-        for (int i = 0; i < rotation.xRotations() % 4; i++) {
+        for (int i = 0; i < rotation.xRotations(); i++) {
             temp = newY;
             newY = cubeLength - 1 - newZ;
             newZ = temp;
         }
 
         // Apply rotations around the Y-axis
-        for (int i = 0; i < rotation.yRotations() % 4; i++) {
+        for (int i = 0; i < rotation.yRotations(); i++) {
             temp = newX;
             newX = newZ;
             newZ = cubeLength - 1 - temp;
         }
 
         // Apply rotations around the Z-axis
-        for (int i = 0; i < rotation.zRotations() % 4; i++) {
+        for (int i = 0; i < rotation.zRotations(); i++) {
             temp = newX;
             newX = cubeLength - 1 - newY;
             newY = temp;
