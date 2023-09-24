@@ -1,14 +1,13 @@
 package model;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class Polycube {
 
     private boolean[][][] grid;
-    private long canonicalValue;
     private int numOfCubes;
-
     private Rotation rotation;
 
 
@@ -18,7 +17,7 @@ public class Polycube {
         this.rotation = new Rotation(0, 0, 0);
         this.addCube(new Coordinate(0, 0, 0, rotation, grid.length));
         this.numOfCubes = 1;
-        this.rotateToCanonicalState();
+        this.setToCanonicalRotation();
     }
 
     public Polycube(Polycube polycube, Coordinate newCubeCoordinate) {
@@ -26,8 +25,7 @@ public class Polycube {
 
         this.addCube(newCubeCoordinate);
         this.shrinkGrid();
-        this.setCanonicalRotation();
-        System.out.println("value: " + this.getCanonicalValue());
+        this.setToCanonicalRotation();
     }
 
     private Polycube(Polycube polycube) {
@@ -40,7 +38,6 @@ public class Polycube {
             }
         }
 
-        this.canonicalValue = polycube.canonicalValue;
         this.numOfCubes = polycube.numOfCubes;
         this.rotation = new Rotation(polycube.rotation.xRotations(), polycube.rotation.yRotations(), polycube.rotation.zRotations());
     }
@@ -62,10 +59,6 @@ public class Polycube {
         return this.numOfCubes;
     }
 
-    private void setRotation(int xRotations, int yRotations, int zRotations) {
-        setRotation(new Rotation(xRotations, yRotations, zRotations));
-    }
-
     private void setRotation(Rotation rotation) {
         this.rotation = rotation;
     }
@@ -78,7 +71,6 @@ public class Polycube {
         for (int x = 0; x < size; x++) {
             for (int y = 0; y < size; y++) {
                 for (int z = 0; z < size; z++) {
-                    // Skip if the current cell is already a cube
                     if (this.isCube(x, y, z)) continue;
 
                     // Check the six possible neighbors
@@ -96,6 +88,10 @@ public class Polycube {
         }
 
         return validPlacements;
+    }
+
+    private boolean isCube(int x, int y, int z) {
+        return isCube(new Coordinate(x, y, z, rotation, grid.length));
     }
 
     private void addBuffer() {
@@ -155,76 +151,24 @@ public class Polycube {
         this.grid = newGrid;
     }
 
-    public void rotateToCanonicalState() {
-        long minValue = Long.MAX_VALUE;
-        Rotation cannonicalRotation = null;
-
-        for (Rotation rotation : Rotation.getAllRotations()) {
-            this.setRotation(rotation);
-            long value = this.calculateValue();
-
-            if (value < minValue) {
-                minValue = value;
-                cannonicalRotation = rotation;
-                this.canonicalValue = value;
-            }
-        }
-
-        this.setRotation(cannonicalRotation);
-    }
-
-    private long calculateValue() {
-        int length = this.grid.length;
-        long value = 0;
-
-        for (int x = 0; x < length; x++) {
-            for (int y = 0; y < length; y++) {
-                for (int z = 0; z < length; z++) {
-                    Coordinate coordinate = new Coordinate(x, y , z, rotation, length);
-                    if (this.isCube(coordinate)) {
-                        int prime = PrimeNumbers.getNthPrime(coordinateToIndex(coordinate));
-                        //prime = prime * (coordinate.x() + coordinate.y() + coordinate.z() + 1);
-                        value += prime;
-                    }
-                }
-            }
-        }
-
-//        System.out.println("value: " + value);
-//        System.out.println("rotation: " + rotation);
-//        System.out.println("num of cubes: " + numOfCubes);
-//        System.out.println(this);
-
-        return value;
-    }
-
     private int coordinateToIndex(Coordinate coordinate) {
         int length = this.grid.length;
         return coordinate.x() + (coordinate.y() * length) + (coordinate.z() * length * length);
     }
 
-    public int coordinateToIndex(int x, int y, int z) {
-       return coordinateToIndex(new Coordinate(x, y, z, rotation, this.grid.length));
-    }
-
     @Override
     public int hashCode() {
-        int prime = 31;
-        int result = 1;
-
-        // Hash polycubeValue
-        result = prime * result + (int) (canonicalValue ^ (canonicalValue >>> 32));
-
-        // Hash the grid
-        for (boolean[][] booleans : grid) {
-            for (int y = 0; y < grid[0].length; y++) {
-                for (int z = 0; z < grid[0][0].length; z++) {
-                    result = prime * result + (booleans[y][z] ? 1231 : 1237);
+        boolean[] bools = new boolean[grid.length * grid.length * grid.length];
+        for (int i = 0; i < grid.length; i++) {
+            for (int j = 0; j < grid[i].length; j++) {
+                for (int k = 0; k < grid[i][j].length; k++) {
+                    Coordinate coordinate = new Coordinate(i, j, k, rotation, grid.length);
+                    bools[coordinateToIndex(coordinate)] = this.isCube(coordinate);
                 }
             }
         }
-
-        return result;
+        //System.out.println(bools.hashCode());
+        return Arrays.hashCode(bools);
     }
 
     @Override
@@ -237,42 +181,19 @@ public class Polycube {
             return false;
         }
 
-        // Check if polycube values are the same
-        if(this.canonicalValue != other.getCanonicalValue()) {
-            return false;
-        }
-
         // Check if dimensions of grid are the same
         if (grid.length != other.getGrid().length) {
             return false;
         }
 
-        // Compare grid values
-        for (int x = 0; x < grid.length; x++) {
-            for (int y = 0; y < grid[0].length; y++) {
-                for (int z = 0; z < grid[0][0].length; z++) {
-                    if (this.isCube(x, y, z) != other.isCube(x, y, z)) {
-                        return false;
-                    }
-                }
-            }
-        }
-
-        return true;
+        // Compare hashCodes
+        return this.hashCode() == other.hashCode();
     }
 
     private boolean isCube(Coordinate coordinate) {
         return this.grid[coordinate.x()][coordinate.y()][coordinate.z()];
     }
 
-    private boolean isCube(int x, int y, int z) {
-        Coordinate coordinate = new Coordinate(x, y, z, rotation, grid.length);
-        return isCube(coordinate);
-    }
-
-    public long getCanonicalValue() {
-        return this.canonicalValue;
-    }
 
     @Override
     public String toString() {
@@ -281,7 +202,7 @@ public class Polycube {
             sb.append("Layer ").append(i).append(":\n");
             for (int j = 0; j < grid[i].length; j++) {
                 for (int k = 0; k < grid[i][j].length; k++) {
-                    sb.append(grid[i][j][k] ? "1" : "0").append(" ");
+                    sb.append(isCube(i, j, k) ? "1" : "0").append(" ");
                 }
                 sb.append("\n");
             }
@@ -290,8 +211,8 @@ public class Polycube {
         return sb.toString();
     }
 
-    public void setCanonicalRotation() {
-        int canonicalHash = hash3DArray();
+    public void setToCanonicalRotation() {
+        int canonicalHash = hashCode();
         Rotation cannonicalRotation = this.rotation;
 
         for (Rotation rotation : Rotation.getAllRotations()) {
@@ -299,7 +220,7 @@ public class Polycube {
                 continue;
             }
             this.setRotation(rotation);
-            int hash = hash3DArray();
+            int hash = hashCode();
 
             if (hash < canonicalHash) {
                 canonicalHash = hash;
@@ -309,20 +230,4 @@ public class Polycube {
 
         this.setRotation(cannonicalRotation);
     }
-
-    public int hash3DArray() {
-        boolean[] bools = new boolean[grid.length * grid.length * grid.length];
-        for (int i = 0; i < grid.length; i++) {
-            for (int j = 0; j < grid[i].length; j++) {
-                for (int k = 0; k < grid[i][j].length; k++) {
-                    Coordinate coordinate = new Coordinate(i, j, k, rotation, grid.length);
-                    bools[coordinateToIndex(coordinate)] = this.isCube(i, j, k);
-                }
-            }
-        }
-        System.out.println(bools.hashCode());
-        return bools.hashCode();
-    }
-    //something is going wrong. the hash codes this makes are all unique. but even two matching shapes are giving differnt hashcodes. they are the same shape and oriented the way, they just have a different gird location rotation. figure that out.
-
 }
