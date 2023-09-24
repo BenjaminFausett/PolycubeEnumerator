@@ -56,4 +56,8 @@ public class Coordinate {
         this.z = newZ;
     }
 
+    public String toString() {
+        return x + " " + y + " " + z;
+    }
+
 }
