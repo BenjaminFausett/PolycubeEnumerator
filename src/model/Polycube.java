@@ -118,7 +118,7 @@ public class Polycube {
         if (!(obj instanceof Polycube other)) {
             return false;
         }
-        if(other.getNumOfCubes() != this.numOfCubes) {
+        if (other.getNumOfCubes() != this.numOfCubes) {
             return false;
         }
 
@@ -208,5 +208,49 @@ public class Polycube {
         }
 
         this.grid = newGrid;
+    }
+
+    public boolean isValidCube() {
+        int length = grid.length;
+
+        boolean[][][] visited = new boolean[length][length][length];
+
+        for (int x = 0; x < length; x++) {
+            for (int y = 0; y < length; y++) {
+                for (int z = 0; z < length; z++) {
+                    if (!grid[x][y][z] && !visited[x][y][z]) {
+                        if (!canFindBoundary(visited, x, y, z)) {
+                            return false;
+                        }
+                    }
+                }
+            }
+        }
+        return true;
+    }
+
+    private boolean canFindBoundary(boolean[][][] visited, int x, int y, int z) {
+        int length = grid.length;
+
+        if (x < 0 || y < 0 || z < 0 || x >= length || y >= length || z >= length) {
+            return true;
+        }
+
+        if (visited[x][y][z] || grid[x][y][z]) {
+            return false;
+        }
+
+        visited[x][y][z] = true;
+
+        boolean isBoundary = false;
+
+        isBoundary |= canFindBoundary(visited, x + 1, y, z);
+        isBoundary |= canFindBoundary(visited, x - 1, y, z);
+        isBoundary |= canFindBoundary(visited, x, y + 1, z);
+        isBoundary |= canFindBoundary(visited, x, y - 1, z);
+        isBoundary |= canFindBoundary(visited, x, y, z + 1);
+        isBoundary |= canFindBoundary(visited, x, y, z - 1);
+
+        return isBoundary;
     }
 }

@@ -12,6 +12,7 @@ public class Main {
         normal();
     }
 
+    //leaving it here for now. all that work to check if a cube has a void in it or not to try and reduce my cube numbers to the correct numbers and they are the exact same. the fact that it elimenated zero cubes makes me think my void checking method is broken.
     public static void normal() {
         Polycube monoCube = new Polycube();
 
@@ -25,6 +26,9 @@ public class Main {
                 List<Coordinate> coordinates = polycube.getValidNewCubePlacements();
                 for(Coordinate coordinate: coordinates) {
                     Polycube candidateCube = new Polycube(polycube, coordinate);
+                    if(!candidateCube.isValidCube()) {
+                        continue;
+                    }
                     candidateCube = PolycubeEnumerator.findCanonicalRotation(candidateCube);
                     if(!polycubeRepository.exists(candidateCube)) {
                         polycubeRepository.add(candidateCube);
