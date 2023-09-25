@@ -7,4 +7,8 @@ public record Rotation(int xRotations, int yRotations, int zRotations) {
         this.yRotations = yRotations % 4;
         this.zRotations = zRotations % 4;
     }
+
+    public String toString() {
+        return "Rotation(" + xRotations + ", " + yRotations + ", " + zRotations + ")";
+    }
 }

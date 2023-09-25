@@ -99,13 +99,15 @@ public class Polycube {
     }
 
     @Override
-    public int hashCode() {//TODO the bug is probably here. i think its not returning the same numbers for the same shape and rotation, could also be in the coordinate system, who knows if its actually mapping to the correct virtual rotation
+    public int hashCode() {//TODO this method is returning the same hashcode no matter the rotation because its probalby not taking the rotation into account.
+        //TODO or i just dont understand the math and the wa the math works here always causes the booleans to end up in the same order
         boolean[] booleans = new boolean[grid.length * grid.length * grid.length];
+        int index = 0;
         for (int x = 0; x < grid.length; x++) {
             for (int y = 0; y < grid[x].length; y++) {
                 for (int z = 0; z < grid[x][y].length; z++) {
-                    Coordinate coordinate = new Coordinate(x, y, z, rotation, grid.length);
-                    booleans[coordinateToIndex(coordinate)] = this.isCube(coordinate);
+                    booleans[index] = this.isCube(x, y, z);
+                    index += 1;
                 }
             }
         }
@@ -207,10 +209,5 @@ public class Polycube {
         }
 
         this.grid = newGrid;
-    }
-
-    private int coordinateToIndex(Coordinate coordinate) {
-        int length = this.grid.length;
-        return coordinate.x() + (coordinate.y() * length) + (coordinate.z() * length * length);
     }
 }

@@ -7,11 +7,32 @@ public class Coordinate {
     private int z;
 
     public Coordinate(int x, int y, int z, Rotation rotation, int cubeLength) {
+        int temp;
+
+        // Apply rotations around the X-axis
+        for (int i = 0; i < rotation.xRotations(); i++) {
+            temp = y;
+            y = cubeLength - 1 - z;
+            z = temp;
+        }
+
+        // Apply rotations around the Y-axis
+        for (int i = 0; i < rotation.yRotations(); i++) {
+            temp = x;
+            x = z;
+            z = cubeLength - 1 - temp;
+        }
+
+        // Apply rotations around the Z-axis
+        for (int i = 0; i < rotation.zRotations(); i++) {
+            temp = x;
+            x = cubeLength - 1 - y;
+            y = temp;
+        }
+
         this.x = x;
         this.y = y;
         this.z = z;
-
-        transformCoordinates(rotation, cubeLength);
     }
 
     public int x() {
@@ -57,7 +78,7 @@ public class Coordinate {
     }
 
     public String toString() {
-        return x + " " + y + " " + z;
+        return "Coordinate(" + x + " " + y + " " + z + ")";
     }
 
 }
