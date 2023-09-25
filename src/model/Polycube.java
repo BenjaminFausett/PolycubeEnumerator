@@ -99,8 +99,7 @@ public class Polycube {
     }
 
     @Override
-    public int hashCode() {//TODO this method is returning the same hashcode no matter the rotation because its probalby not taking the rotation into account.
-        //TODO or i just dont understand the math and the wa the math works here always causes the booleans to end up in the same order
+    public int hashCode() {
         boolean[] booleans = new boolean[grid.length * grid.length * grid.length];
         int index = 0;
         for (int x = 0; x < grid.length; x++) {

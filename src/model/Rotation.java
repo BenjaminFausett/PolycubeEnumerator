@@ -1,5 +1,6 @@
 package model;
 
+
 public record Rotation(int xRotations, int yRotations, int zRotations) {
 
     public Rotation(int xRotations, int yRotations, int zRotations) {
@@ -11,4 +12,5 @@ public record Rotation(int xRotations, int yRotations, int zRotations) {
     public String toString() {
         return "Rotation(" + xRotations + ", " + yRotations + ", " + zRotations + ")";
     }
+
 }
