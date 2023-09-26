@@ -48,34 +48,34 @@ public class PolycubeRepository {
     public boolean exists(Polycube polycube) {
         switch (polycube.getVolume()) {
             case 1 -> {
-                return monoCubes.contains(polycube.clone());
+                return monoCubes.contains(polycube);
             }
             case 2 -> {
-                return diCubes.contains(polycube.clone());
+                return diCubes.contains(polycube);
             }
             case 3 -> {
-                return triCubes.contains(polycube.clone());
+                return triCubes.contains(polycube);
             }
             case 4 -> {
-                return tetraCubes.contains(polycube.clone());
+                return tetraCubes.contains(polycube);
             }
             case 5 -> {
-                return pentaCubes.contains(polycube.clone());
+                return pentaCubes.contains(polycube);
             }
             case 6 -> {
-                return hexaCubes.contains(polycube.clone());
+                return hexaCubes.contains(polycube);
             }
             case 7 -> {
-                return heptaCubes.contains(polycube.clone());
+                return heptaCubes.contains(polycube);
             }
             case 8 -> {
-                return octaCubes.contains(polycube.clone());
+                return octaCubes.contains(polycube);
             }
             case 9 -> {
-                return nonaCubes.contains(polycube.clone());
+                return nonaCubes.contains(polycube);
             }
             case 10 -> {
-                return decaCubes.contains(polycube.clone());
+                return decaCubes.contains(polycube);
             }
         }
         return false;

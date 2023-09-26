@@ -1,24 +1,31 @@
-Finished polycubes of size 2 in 0 seconds.
-Finished polycubes of size 3 in 0 seconds.
-Finished polycubes of size 4 in 0 seconds.
-Finished polycubes of size 5 in 0 seconds.
-Finished polycubes of size 6 in 0 seconds.
-Finished polycubes of size 7 in 0 seconds.
-Finished polycubes of size 8 in 6 seconds.
+n	translation t(n)	3-d rotation r(n)
+1	1	                1
+2	3	                1
+3	15	                2
+4	86	                8
+5	534	                29
+6	3481	            166
+7	23502	            1023
+8	162913	            6922
+9	1152870	            48311
+10	8294738	            346543
+11	60494549	        2522522
+12	446205905	        18598427
+13	3322769321	        138462649
+14	24946773111	        1039496297
+15	188625900446	    7859514470
+16	1435074454755	    59795121480
+
+
 1.  monoCubes count: 1
-2.  diCubes count: 3
-3.  triCubes count: 15
-4.  tetraCubes count: 84
-5.  pentaCubes count: 518
-6.  hexaCubes count: 3224
-7.  heptaCubes count: 21914
-8.  octaCubes count: 145478
+2.  diCubes count: 1
+3.  triCubes count: 4
+4.  tetraCubes count: 11
+5.  pentaCubes count: 67
+6.  hexaCubes count: 347
+7.  heptaCubes count: 0
+8.  octaCubes count: 0
 9.  nonaCubes count: 0
 10. decaCubes count: 0
-
-
-notes: im a little off. all values after 3 are smaller than they should be, and get smaller as N gets bigger. 8 is off by like 20k
-im clearly off because cubes exist that are differnt but have all the same metrics i have found so far
-also, im way off becaues these numbers are close the "translation" numbers which dont take rotation into account. i need numbers close to the 3-d rotation column
 
 http://kevingong.com/Polyominoes/Enumeration.html

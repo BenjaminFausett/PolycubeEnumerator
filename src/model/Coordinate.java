@@ -7,9 +7,10 @@ public class Coordinate {
     private final double z;
 
     public Coordinate(double x, double y, double z) {
-        this.x = (double)Math.round(x * 100000d) / 100000d;
-        this.y = (double)Math.round(y * 100000d) / 100000d;
-        this.z = (double)Math.round(z * 100000d) / 100000d;
+        double factor = Math.pow(10, 4);
+        this.x = Math.floor(x * factor) / factor;
+        this.y = Math.floor(y * factor) / factor;
+        this.z = Math.floor(z * factor) / factor;
     }
 
     public double x() {

@@ -3,6 +3,7 @@ import model.Polycube;
 import model.PolycubeRepository;
 
 import java.time.Instant;
+import java.util.Arrays;
 import java.util.List;
 
 public class Main {
@@ -17,19 +18,22 @@ public class Main {
         PolycubeRepository polycubeRepository = new PolycubeRepository();
         polycubeRepository.add(monoCube);
 
-        for (int i = 1; i < 8; i++) {
+        for (int i = 2; i < 7; i++) {
             Instant start = Instant.now();
-            List<Polycube> polycubes = polycubeRepository.getPolycubes(i);
-            for(Polycube polycube: polycubes) {
+            List<Polycube> polycubes = polycubeRepository.getPolycubes(i - 1);
+
+
+            polycubes.forEach(polycube -> {
                 List<Coordinate> coordinates = polycube.getValidNewCubePlacements();
-                for(Coordinate coordinate: coordinates) {
+                coordinates.forEach(coordinate -> {
                     Polycube candidateCube = new Polycube(polycube, coordinate);
-                    if(!polycubeRepository.exists(candidateCube)) {
+                    if (!polycubeRepository.exists(candidateCube)) {
                         polycubeRepository.add(candidateCube);
                     }
-                }
-            }
-            System.out.println("Finished polycubes of size " + (i + 1) + " in " + (Instant.now().getEpochSecond() - start.getEpochSecond()) + " seconds.");
+                });
+            });
+
+            System.out.println("Finished polycubes of size " + (i) + " in " + (Instant.now().getEpochSecond() - start.getEpochSecond()) + " seconds.");
         }
 
         System.out.println(polycubeRepository);

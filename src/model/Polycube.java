@@ -14,8 +14,26 @@ public class Polycube {
     private int edges;
     private int boundingBoxVolume;
     private Coordinate centroid;
-    private HashSet<Coordinate> distanceVectors;
+    private double distanceVectorsSum;
 
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        for (int z = 0; z < grid.length; z++) {
+            sb.append("Layer ").append(z).append(":\n");
+            for (int y = 0; y < grid[z].length; y++) {
+                for (int x = 0; x < grid[z][y].length; x++) {
+                    sb.append(grid[z][y][x] ? "1" : "0");
+                    sb.append(" ");
+                }
+                sb.append("\n");
+            }
+            sb.append("\n");
+        }
+
+        sb.append(("" + this.edges + this.surfaceArea + this.vertices + this.volume + this.boundingBoxVolume + this.distanceVectorsSum));
+        return sb.toString();
+    }
 
     //Creates the one and only perfect Mono Cube
     public Polycube() {
@@ -82,7 +100,7 @@ public class Polycube {
         this.surfaceArea = polycube.surfaceArea;
         this.edges = polycube.edges;
         this.centroid = polycube.centroid;
-        this.distanceVectors = polycube.distanceVectors;
+        this.distanceVectorsSum = polycube.distanceVectorsSum;
         this.vertices = polycube.vertices;
     }
 
@@ -309,28 +327,27 @@ public class Polycube {
     }
 
     public void calculateDistanceVectors() {
-        HashSet<Coordinate> distanceVectors = new HashSet<>();
+
+        double xDistance = 0;
+        double yDistance = 0;
+        double zDistance = 0;
 
         // Iterate through the 3D array to find cubes and calculate distance vectors
         for (int x = 0; x < grid.length; x++) {
             for (int y = 0; y < grid[0].length; y++) {
                 for (int z = 0; z < grid[0][0].length; z++) {
                     if (grid[x][y][z]) {
-                        Coordinate cubeCenter = new Coordinate(x + 0.5, y + 0.5, z + 0.5);
+                        Coordinate cube = new Coordinate(x, y, z);
 
-                        Coordinate distanceVector = new Coordinate(
-                                cubeCenter.x() - this.centroid.x(),
-                                cubeCenter.y() - centroid.y(),
-                                cubeCenter.z() - centroid.z()
-                        );
-
-                        distanceVectors.add(distanceVector);
+                        xDistance += Math.abs(cube.x() - this.centroid.x());
+                        yDistance += Math.abs(cube.y() - this.centroid.y());
+                        zDistance += Math.abs(cube.z() - this.centroid.z());
                     }
                 }
             }
         }
 
-        this.distanceVectors = distanceVectors;
+        this.distanceVectorsSum = xDistance + yDistance + zDistance;
     }
 
     public void calculateExposedVertices() {
@@ -378,7 +395,7 @@ public class Polycube {
 
     @Override
     public int hashCode() {
-        return ("" + this.edges + this.surfaceArea + this.vertices + this.volume + this.boundingBoxVolume + this.distanceVectors.hashCode()).hashCode();
+        return ("" + this.edges + this.surfaceArea + this.vertices + this.volume + this.boundingBoxVolume + this.distanceVectorsSum).hashCode();
     }
 
     @Override
@@ -386,7 +403,7 @@ public class Polycube {
         if (!(obj instanceof Polycube other)) {
             return false;
         }
-        if (this.edges != other.edges || this.surfaceArea != other.surfaceArea || this.vertices != other.vertices || this.volume != other.volume || this.boundingBoxVolume != other.boundingBoxVolume || this.distanceVectors.hashCode() != other.distanceVectors.hashCode()) {
+        if (this.edges != other.edges || this.surfaceArea != other.surfaceArea || this.vertices != other.vertices || this.volume != other.volume || this.boundingBoxVolume != other.boundingBoxVolume || this.distanceVectorsSum != other.distanceVectorsSum) {
             return false;
         }
 
