@@ -2,83 +2,35 @@ package model;
 
 public class Coordinate {
 
-    private int x;
-    private int y;
-    private int z;
+    private final double x;
+    private final double y;
+    private final double z;
 
-    public Coordinate(int x, int y, int z, Rotation rotation, int cubeLength) {
-        int temp;
-
-        // Apply rotations around the X-axis
-        for (int i = 0; i < rotation.xRotations(); i++) {
-            temp = y;
-            y = cubeLength - 1 - z;
-            z = temp;
-        }
-
-        // Apply rotations around the Y-axis
-        for (int i = 0; i < rotation.yRotations(); i++) {
-            temp = x;
-            x = z;
-            z = cubeLength - 1 - temp;
-        }
-
-        // Apply rotations around the Z-axis
-        for (int i = 0; i < rotation.zRotations(); i++) {
-            temp = x;
-            x = cubeLength - 1 - y;
-            y = temp;
-        }
-
-        this.x = x;
-        this.y = y;
-        this.z = z;
+    public Coordinate(double x, double y, double z) {
+        this.x = (double)Math.round(x * 100000d) / 100000d;
+        this.y = (double)Math.round(y * 100000d) / 100000d;
+        this.z = (double)Math.round(z * 100000d) / 100000d;
     }
 
-    public int x() {
+    public double x() {
         return x;
     }
 
-    public int y() {
+    public double y() {
         return y;
     }
 
-    public int z() {
+    public double z() {
         return z;
-    }
-
-    private void transformCoordinates(Rotation rotation, int cubeLength) {
-        int newX = this.x, newY = this.y, newZ = this.z;
-        int temp;
-
-        // Apply rotations around the X-axis
-        for (int i = 0; i < rotation.xRotations(); i++) {
-            temp = newY;
-            newY = cubeLength - 1 - newZ;
-            newZ = temp;
-        }
-
-        // Apply rotations around the Y-axis
-        for (int i = 0; i < rotation.yRotations(); i++) {
-            temp = newX;
-            newX = newZ;
-            newZ = cubeLength - 1 - temp;
-        }
-
-        // Apply rotations around the Z-axis
-        for (int i = 0; i < rotation.zRotations(); i++) {
-            temp = newX;
-            newX = cubeLength - 1 - newY;
-            newY = temp;
-        }
-
-        this.x = newX;
-        this.y = newY;
-        this.z = newZ;
     }
 
     public String toString() {
         return "Coordinate(" + x + " " + y + " " + z + ")";
+    }
+
+    @Override
+    public int hashCode() {
+        return ("" + x + y + z).hashCode();
     }
 
 }

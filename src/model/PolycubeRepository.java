@@ -31,7 +31,7 @@ public class PolycubeRepository {
     
     
     public void add(Polycube polycube) {
-        switch (polycube.getNumOfCubes()) {
+        switch (polycube.getVolume()) {
             case 1 -> monoCubes.add(polycube);
             case 2 -> diCubes.add(polycube);
             case 3 -> triCubes.add(polycube);
@@ -46,7 +46,7 @@ public class PolycubeRepository {
     }
 
     public boolean exists(Polycube polycube) {
-        switch (polycube.getNumOfCubes()) {
+        switch (polycube.getVolume()) {
             case 1 -> {
                 return monoCubes.contains(polycube.clone());
             }

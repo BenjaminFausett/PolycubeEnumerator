@@ -1,0 +1,24 @@
+Finished polycubes of size 2 in 0 seconds.
+Finished polycubes of size 3 in 0 seconds.
+Finished polycubes of size 4 in 0 seconds.
+Finished polycubes of size 5 in 0 seconds.
+Finished polycubes of size 6 in 0 seconds.
+Finished polycubes of size 7 in 0 seconds.
+Finished polycubes of size 8 in 6 seconds.
+1.  monoCubes count: 1
+2.  diCubes count: 3
+3.  triCubes count: 15
+4.  tetraCubes count: 84
+5.  pentaCubes count: 518
+6.  hexaCubes count: 3224
+7.  heptaCubes count: 21914
+8.  octaCubes count: 145478
+9.  nonaCubes count: 0
+10. decaCubes count: 0
+
+
+notes: im a little off. all values after 3 are smaller than they should be, and get smaller as N gets bigger. 8 is off by like 20k
+im clearly off because cubes exist that are differnt but have all the same metrics i have found so far
+also, im way off becaues these numbers are close the "translation" numbers which dont take rotation into account. i need numbers close to the 3-d rotation column
+
+http://kevingong.com/Polyominoes/Enumeration.html
