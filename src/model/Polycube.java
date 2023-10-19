@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 public class Polycube {
 
@@ -49,7 +48,7 @@ public class Polycube {
 
                 for (int z = 0; z < zLength; z++) {
                     if (polycube.grid[x][y][z] != null) {
-                        copy[x][y][z] = polycube.grid[x][y][z].clone();  // Using the copy method
+                        copy[x][y][z] = polycube.grid[x][y][z].clone();
                     }
                 }
             }
@@ -78,9 +77,9 @@ public class Polycube {
         for (int x = 0; x < xSize; x++) {
             for (int y = 0; y < ySize; y++) {
                 for (int z = 0; z < zSize; z++) {
-                    if(grid[x][y][z] != null) {
+                    if (grid[x][y][z] != null) {
 
-                        if(x == coordinate.x() && y == coordinate.y() && z == coordinate.z()) {
+                        if (x == coordinate.x() && y == coordinate.y() && z == coordinate.z()) {
                             continue;
                         }
 
@@ -238,11 +237,11 @@ public class Polycube {
     public String toString() {
         StringBuilder sb = new StringBuilder();
 
-        for (int z = 0; z < grid[0][0].length; z++) { // Iterating over the depth (z-axis)
+        for (int z = 0; z < grid[0][0].length; z++) {
             sb.append("Layer ").append(z).append(":\n");
 
-            for (Cube[][] cubes : grid) { // Iterating over the height (y-axis)
-                for (int x = 0; x < grid[0].length; x++) { // Iterating over the width (x-axis)
+            for (Cube[][] cubes : grid) {
+                for (int x = 0; x < grid[0].length; x++) {
                     if (cubes[x][z] != null) {
                         sb.append("[#]");
                     } else {

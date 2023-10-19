@@ -28,7 +28,7 @@ public class Main {
                     Polycube candidateCube = new Polycube(polycube, coordinate);
                     if (!polycubeRepository.exists(candidateCube)) {
                         polycubeRepository.add(candidateCube);
-                        if(candidateCube.getVolume() == -1) {
+                        if (candidateCube.getVolume() == -1) {
                             candidateCube.printMetrics();
                             System.out.println(candidateCube);
                         }

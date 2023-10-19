@@ -32,7 +32,7 @@ public class Cube implements Comparable<Cube> {
 
     @Override
     public int hashCode() {
-        if(this.hashCode == 0) {
+        if (this.hashCode == 0) {
             this.hashCode = this.distances.hashCode();
         }
         return this.hashCode;

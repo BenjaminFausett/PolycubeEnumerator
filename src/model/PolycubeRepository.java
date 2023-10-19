@@ -28,8 +28,8 @@ public class PolycubeRepository {
         nonaCubes = new HashSet<>();
         decaCubes = new HashSet<>();
     }
-    
-    
+
+
     public void add(Polycube polycube) {
         switch (polycube.getVolume()) {
             case 1 -> monoCubes.add(polycube);
