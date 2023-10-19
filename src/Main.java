@@ -3,7 +3,6 @@ import model.Polycube;
 import model.PolycubeRepository;
 
 import java.time.Instant;
-import java.util.HashMap;
 import java.util.List;
 
 public class Main {
@@ -18,7 +17,7 @@ public class Main {
         PolycubeRepository polycubeRepository = new PolycubeRepository();
         polycubeRepository.add(monoCube);
 
-        for (int i = 2; i < 7; i++) {
+        for (int i = 2; i < 11; i++) {
             Instant start = Instant.now();
             List<Polycube> polycubes = polycubeRepository.getPolycubes(i - 1);
 
@@ -29,7 +28,7 @@ public class Main {
                     Polycube candidateCube = new Polycube(polycube, coordinate);
                     if (!polycubeRepository.exists(candidateCube)) {
                         polycubeRepository.add(candidateCube);
-                        if(candidateCube.getVolume() == 2) {
+                        if(candidateCube.getVolume() == -1) {
                             candidateCube.printMetrics();
                             System.out.println(candidateCube);
                         }

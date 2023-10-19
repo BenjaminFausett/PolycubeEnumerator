@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 public class Polycube {
 
@@ -79,11 +80,15 @@ public class Polycube {
                 for (int z = 0; z < zSize; z++) {
                     if(grid[x][y][z] != null) {
 
+                        if(x == coordinate.x() && y == coordinate.y() && z == coordinate.z()) {
+                            continue;
+                        }
+
                         int dx = Math.abs(coordinate.x() - x);
                         int dy = Math.abs(coordinate.y() - y);
                         int dz = Math.abs(coordinate.z() - z);
 
-                        double distance = Math.sqrt(dx * dx + dy * dy + dz * dz);
+                        double distance = Math.sqrt((dx * dx) + (dy * dy) + (dz * dz));
                         distance = Math.round(distance * SCALE) / SCALE;
 
                         grid[x][y][z].addToDistances(distance);
@@ -197,7 +202,7 @@ public class Polycube {
             for (int y = 0; y < yLen; y++) {
                 for (int z = 0; z < zLen; z++) {
                     if (grid[x][y][z] != null) {
-                        hashCount = 31 * hashCount + grid[x][y][z].hashCode();
+                        hashCount += grid[x][y][z].hashCode();
                     }
                 }
             }
@@ -212,21 +217,21 @@ public class Polycube {
             return false;
         }
 
-        List<Cube> cubes = Arrays.stream(grid)
+        int[] cubeHashes = Arrays.stream(grid)
                 .flatMap(Arrays::stream)
                 .flatMap(Arrays::stream)
                 .filter(Objects::nonNull)
-                .sorted()
-                .toList();
+                .mapToInt(Cube::hashCode)
+                .sorted().toArray();
 
-        List<Cube> otherCubes = Arrays.stream(other.grid)
+        int[] otherHashes = Arrays.stream(other.grid)
                 .flatMap(Arrays::stream)
                 .flatMap(Arrays::stream)
                 .filter(Objects::nonNull)
-                .sorted()
-                .toList();
+                .mapToInt(Cube::hashCode)
+                .sorted().toArray();
 
-        return cubes.equals(otherCubes);
+        return Arrays.equals(cubeHashes, otherHashes);
     }
 
     @Override
@@ -255,6 +260,7 @@ public class Polycube {
         System.out.println();
         System.out.println("Volume: " + volume);
         System.out.println("Bounding box: [" + this.grid.length + ", " + this.grid[0].length + ", " + this.grid[0][0].length + "]");
+        System.out.println("HashCode: " + this.hashCode());
         System.out.println("Distances map:");
         Arrays.stream(grid)
                 .flatMap(Arrays::stream)
