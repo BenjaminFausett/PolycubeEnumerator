@@ -119,16 +119,16 @@ public class PolycubeRepository {
 
     public String toString() {
         String s = "";
-        s += "1.  monoCubes count: " + monoCubes.size() + "\n";
-        s += "2.  diCubes count: " + diCubes.size() + "\n";
-        s += "3.  triCubes count: " + triCubes.size() + "\n";
-        s += "4.  tetraCubes count: " + tetraCubes.size() + "\n";
-        s += "5.  pentaCubes count: " + pentaCubes.size() + "\n";
-        s += "6.  hexaCubes count: " + hexaCubes.size() + "\n";
-        s += "7.  heptaCubes count: " + heptaCubes.size() + "\n";
-        s += "8.  octaCubes count: " + octaCubes.size() + "\n";
-        s += "9.  nonaCubes count: " + nonaCubes.size() + "\n";
-        s += "10. decaCubes count: " + decaCubes.size() + "\n";
+        s += "1.  MonoCubes count: " + monoCubes.size() + "\n";
+        s += "2.  DiCubes count: " + diCubes.size() + "\n";
+        s += "3.  TriCubes count: " + triCubes.size() + "\n";
+        s += "4.  TetraCubes count: " + tetraCubes.size() + "\n";
+        s += "5.  PentaCubes count: " + pentaCubes.size() + "\n";
+        s += "6.  HexaCubes count: " + hexaCubes.size() + "\n";
+        s += "7.  HeptaCubes count: " + heptaCubes.size() + "\n";
+        s += "8.  OctaCubes count: " + octaCubes.size() + "\n";
+        s += "9.  NonaCubes count: " + nonaCubes.size() + "\n";
+        s += "10. DecaCubes count: " + decaCubes.size() + "\n";
 
         return s;
     }

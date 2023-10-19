@@ -1,37 +1,33 @@
 package model;
 
-public class Coordinate {
+import java.util.Arrays;
 
-    private final double x;
-    private final double y;
-    private final double z;
+public record Coordinate(int x, int y, int z) {
 
-    public Coordinate(double x, double y, double z) {
-        double factor = Math.pow(10, 4);
-        this.x = Math.floor(x * factor) / factor;
-        this.y = Math.floor(y * factor) / factor;
-        this.z = Math.floor(z * factor) / factor;
-    }
-
-    public double x() {
-        return x;
-    }
-
-    public double y() {
-        return y;
-    }
-
-    public double z() {
-        return z;
-    }
-
+    @Override
     public String toString() {
-        return "Coordinate(" + x + " " + y + " " + z + ")";
+        double[] values = {x, y, z};
+        Arrays.sort(values);
+        return Arrays.toString(values);
     }
 
     @Override
     public int hashCode() {
-        return ("" + x + y + z).hashCode();
+        double[] values = {x, y, z};
+        Arrays.sort(values);
+        return Arrays.hashCode(values);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (!(obj instanceof Coordinate other)) {
+            return false;
+        }
+        double[] values1 = {x, y, z};
+        double[] values2 = {other.x, other.y, other.z};
+        Arrays.sort(values1);
+        Arrays.sort(values2);
+        return Arrays.equals(values1, values2);
     }
 
 }

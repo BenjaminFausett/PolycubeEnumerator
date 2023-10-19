@@ -3,7 +3,7 @@ import model.Polycube;
 import model.PolycubeRepository;
 
 import java.time.Instant;
-import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 
 public class Main {
@@ -29,6 +29,10 @@ public class Main {
                     Polycube candidateCube = new Polycube(polycube, coordinate);
                     if (!polycubeRepository.exists(candidateCube)) {
                         polycubeRepository.add(candidateCube);
+                        if(candidateCube.getVolume() == 2) {
+                            candidateCube.printMetrics();
+                            System.out.println(candidateCube);
+                        }
                     }
                 });
             });
@@ -60,4 +64,5 @@ public class Main {
         System.out.println(diCube2.hashCode());
         System.out.println(diCube2);
     }
+
 }

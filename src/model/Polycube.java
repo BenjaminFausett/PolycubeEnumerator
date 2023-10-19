@@ -1,78 +1,34 @@
 package model;
 
 import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 public class Polycube {
 
-    private boolean[][][] grid;
+    private final static double DECIMAL_ACCURACY = 10;
+    private static final double SCALE = Math.pow(10, DECIMAL_ACCURACY);
 
+    private Cube[][][] grid;
     private int volume;
-    private int surfaceArea;
-    private int vertices;
-    private int edges;
-    private int boundingBoxVolume;
-    private Coordinate centroid;
-    private double distanceVectorsSum;
 
-    @Override
-    public String toString() {
-        StringBuilder sb = new StringBuilder();
-        for (int z = 0; z < grid.length; z++) {
-            sb.append("Layer ").append(z).append(":\n");
-            for (int y = 0; y < grid[z].length; y++) {
-                for (int x = 0; x < grid[z][y].length; x++) {
-                    sb.append(grid[z][y][x] ? "1" : "0");
-                    sb.append(" ");
-                }
-                sb.append("\n");
-            }
-            sb.append("\n");
-        }
-
-        sb.append(("" + this.edges + this.surfaceArea + this.vertices + this.volume + this.boundingBoxVolume + this.distanceVectorsSum));
-        return sb.toString();
-    }
-
-    //Creates the one and only perfect Mono Cube
+    //Creates the one and only perfect MonoCube
     public Polycube() {
-        this.grid = new boolean[1][1][1];
+        this.grid = new Cube[1][1][1];
         this.volume = 0;
         this.addCube(new Coordinate(0, 0, 0));
-        this.calculateSurfaceArea();
-        this.calculateVertices();
-        this.calculateEdges();
-        this.calculateCentroid();
-        this.calculateBoundingBoxVolume();
-        this.calculateDistanceVectors();
-        this.calculateExposedVertices();
     }
 
     public Polycube(Polycube polycube, Coordinate newCubeCoordinate) {
         this(polycube);
         this.addCube(newCubeCoordinate);
         this.shrinkGrid();
-        this.calculateSurfaceArea();
-        this.calculateVertices();
-        this.calculateEdges();
-        this.calculateCentroid();
-        this.calculateBoundingBoxVolume();
-        this.calculateDistanceVectors();
-        this.calculateExposedVertices();
-    }
-
-    private void calculateBoundingBoxVolume() {
-        this.boundingBoxVolume = this.grid.length * this.grid[0].length * this.grid[0][0].length;
-    }
-
-    public int getVolume() {
-        return this.volume;
     }
 
     private Polycube(Polycube polycube) {
         int xLength = polycube.grid.length;
-        boolean[][][] copy = new boolean[xLength][][];
+        Cube[][][] copy = new Cube[xLength][][];
 
         for (int x = 0; x < xLength; x++) {
             if (polycube.grid[x] == null) {
@@ -80,7 +36,7 @@ public class Polycube {
             }
 
             int yLength = polycube.grid[x].length;
-            copy[x] = new boolean[yLength][];
+            copy[x] = new Cube[yLength][];
 
             for (int y = 0; y < yLength; y++) {
                 if (polycube.grid[x][y] == null) {
@@ -88,114 +44,54 @@ public class Polycube {
                 }
 
                 int zLength = polycube.grid[x][y].length;
-                copy[x][y] = new boolean[zLength];
+                copy[x][y] = new Cube[zLength];
 
-                System.arraycopy(polycube.grid[x][y], 0, copy[x][y], 0, zLength);
+                for (int z = 0; z < zLength; z++) {
+                    if (polycube.grid[x][y][z] != null) {
+                        copy[x][y][z] = polycube.grid[x][y][z].clone();  // Using the copy method
+                    }
+                }
             }
         }
 
         this.grid = copy;
-
         this.volume = polycube.volume;
-        this.surfaceArea = polycube.surfaceArea;
-        this.edges = polycube.edges;
-        this.centroid = polycube.centroid;
-        this.distanceVectorsSum = polycube.distanceVectorsSum;
-        this.vertices = polycube.vertices;
     }
 
     public Polycube clone() {
         return new Polycube(this);
     }
 
+    public int getVolume() {
+        return this.volume;
+    }
+
     public void addCube(Coordinate coordinate) {
         this.volume += 1;
-        this.grid[(int) coordinate.x()][(int) coordinate.y()][(int) coordinate.z()] = true;
-    }
+        this.grid[coordinate.x()][coordinate.y()][coordinate.z()] = new Cube();
 
-    public void calculateSurfaceArea() {
-        int surfaceArea = 0;
-        int[] dx = {-1, 1, 0, 0, 0, 0};
-        int[] dy = {0, 0, -1, 1, 0, 0};
-        int[] dz = {0, 0, 0, 0, -1, 1};
+        int xSize = grid.length;
+        int ySize = grid[0].length;
+        int zSize = grid[0][0].length;
 
-        for (int x = 0; x < grid.length; x++) {
-            for (int y = 0; y < grid[0].length; y++) {
-                for (int z = 0; z < grid[0][0].length; z++) {
-                    if (grid[x][y][z]) {
-                        int exposedFaces = 6; // Max number of exposed faces for a cube
-                        for (int i = 0; i < 6; i++) {
-                            int newX = x + dx[i];
-                            int newY = y + dy[i];
-                            int newZ = z + dz[i];
-                            if (newX >= 0 && newX < grid.length &&
-                                    newY >= 0 && newY < grid[0].length &&
-                                    newZ >= 0 && newZ < grid[0][0].length &&
-                                    grid[newX][newY][newZ]) {
-                                exposedFaces--;
-                            }
-                        }
-                        surfaceArea += exposedFaces;
+        for (int x = 0; x < xSize; x++) {
+            for (int y = 0; y < ySize; y++) {
+                for (int z = 0; z < zSize; z++) {
+                    if(grid[x][y][z] != null) {
+
+                        int dx = Math.abs(coordinate.x() - x);
+                        int dy = Math.abs(coordinate.y() - y);
+                        int dz = Math.abs(coordinate.z() - z);
+
+                        double distance = Math.sqrt(dx * dx + dy * dy + dz * dz);
+                        distance = Math.round(distance * SCALE) / SCALE;
+
+                        grid[x][y][z].addToDistances(distance);
+                        grid[coordinate.x()][coordinate.y()][coordinate.z()].addToDistances(distance);
                     }
                 }
             }
         }
-        this.surfaceArea = surfaceArea;
-    }
-
-    public void calculateEdges() {//TODO, this aint right, should only count visiable ones, and some edges can be combined
-        int edges = 0;
-        for (int x = 0; x < grid.length; x++) {
-            for (int y = 0; y < grid[0].length; y++) {
-                for (int z = 0; z < grid[0][0].length; z++) {
-                    if (grid[x][y][z]) {
-                        int[] dx = {0, 0, 1, 0, 0, -1};
-                        int[] dy = {0, 1, 0, 0, -1, 0};
-                        int[] dz = {1, 0, 0, -1, 0, 0};
-                        for (int i = 0; i < 6; i++) {
-                            int newX = x + dx[i];
-                            int newY = y + dy[i];
-                            int newZ = z + dz[i];
-                            if (newX >= 0 && newX < grid.length &&
-                                    newY >= 0 && newY < grid[0].length &&
-                                    newZ >= 0 && newZ < grid[0][0].length &&
-                                    !grid[newX][newY][newZ]) {
-                                edges += 4;  // Each exposed face contributes 4 edges
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        this.edges = edges / 2;  // Each edge is counted twice, so divide by 2
-    }
-
-    private void calculateVertices() { //TODO
-        this.vertices = 0;
-    }
-
-    private void calculateCentroid() {
-        double totalX = 0, totalY = 0, totalZ = 0;
-        int count = 0;
-
-        for (int x = 0; x < grid.length; x++) {
-            for (int y = 0; y < grid[0].length; y++) {
-                for (int z = 0; z < grid[0][0].length; z++) {
-                    if (grid[x][y][z]) {
-                        totalX += x + 0.5;
-                        totalY += y + 0.5;
-                        totalZ += z + 0.5;
-                        count++;
-                    }
-                }
-            }
-        }
-
-        if (count == 0) {
-            this.centroid = new Coordinate(0, 0, 0);  // Return the origin if there are no cubes
-        }
-
-        this.centroid = new Coordinate(totalX / count, totalY / count, totalZ / count);
     }
 
     public List<Coordinate> getValidNewCubePlacements() {
@@ -208,14 +104,14 @@ public class Polycube {
         for (int x = 0; x < xSize; x++) {
             for (int y = 0; y < ySize; y++) {
                 for (int z = 0; z < zSize; z++) {
-                    if (this.grid[x][y][z]) continue;
+                    if (this.grid[x][y][z] != null) continue;
 
-                    if ((x > 0 && this.grid[x - 1][y][z]) ||
-                            (x < xSize - 1 && this.grid[x + 1][y][z]) ||
-                            (y > 0 && this.grid[x][y - 1][z]) ||
-                            (y < ySize - 1 && this.grid[x][y + 1][z]) ||
-                            (z > 0 && this.grid[x][y][z - 1]) ||
-                            (z < zSize - 1 && this.grid[x][y][z + 1])) {
+                    if ((x > 0 && this.grid[x - 1][y][z] != null) ||
+                            (x < xSize - 1 && this.grid[x + 1][y][z] != null) ||
+                            (y > 0 && this.grid[x][y - 1][z] != null) ||
+                            (y < ySize - 1 && this.grid[x][y + 1][z] != null) ||
+                            (z > 0 && this.grid[x][y][z - 1] != null) ||
+                            (z < zSize - 1 && this.grid[x][y][z + 1] != null)) {
 
                         validPlacements.add(new Coordinate(x, y, z));
                     }
@@ -231,15 +127,19 @@ public class Polycube {
         int yLength = this.grid[0].length;
         int zLength = this.grid[0][0].length;
 
-        boolean[][][] bufferedArray = new boolean[xLength + 2][yLength + 2][zLength + 2];
+        Cube[][][] bufferedGrid = new Cube[xLength + 2][yLength + 2][zLength + 2];
 
         for (int x = 0; x < xLength; x++) {
             for (int y = 0; y < yLength; y++) {
-                System.arraycopy(this.grid[x][y], 0, bufferedArray[x + 1][y + 1], 1, zLength);
+                for (int z = 0; z < zLength; z++) {
+                    if (this.grid[x][y][z] != null) {
+                        bufferedGrid[x + 1][y + 1][z + 1] = this.grid[x][y][z].clone();
+                    }
+                }
             }
         }
 
-        this.grid = bufferedArray;
+        this.grid = bufferedGrid;
     }
 
     private void shrinkGrid() {
@@ -254,7 +154,7 @@ public class Polycube {
         for (int x = 0; x < xLen; x++) {
             for (int y = 0; y < yLen; y++) {
                 for (int z = 0; z < zLen; z++) {
-                    if (grid[x][y][z]) {
+                    if (grid[x][y][z] != null) {
                         xMin = Math.min(xMin, x);
                         xMax = Math.max(xMax, x);
                         yMin = Math.min(yMin, y);
@@ -267,135 +167,43 @@ public class Polycube {
         }
 
         if (xMin > xMax || yMin > yMax || zMin > zMax) {
-            this.grid = new boolean[0][0][0];
+            this.grid = new Cube[0][0][0];
+            return;
         }
 
-        boolean[][][] shrunkGrid = new boolean[xMax - xMin + 1][yMax - yMin + 1][zMax - zMin + 1];
+        Cube[][][] shrunkGrid = new Cube[xMax - xMin + 1][yMax - yMin + 1][zMax - zMin + 1];
 
         for (int x = xMin; x <= xMax; x++) {
             for (int y = yMin; y <= yMax; y++) {
-                if (zMax + 1 - zMin >= 0)
-                    System.arraycopy(grid[x][y], zMin, shrunkGrid[x - xMin][y - yMin], 0, zMax + 1 - zMin);
+                for (int z = zMin; z <= zMax; z++) {
+                    if (grid[x][y][z] != null) {
+                        shrunkGrid[x - xMin][y - yMin][z - zMin] = grid[x][y][z].clone();
+                    }
+                }
             }
         }
 
         this.grid = shrunkGrid;
     }
 
-    public boolean isValidCube() {
-        int length = grid.length;
-
-        boolean[][][] visited = new boolean[length][length][length];
-
-        for (int x = 0; x < length; x++) {
-            for (int y = 0; y < length; y++) {
-                for (int z = 0; z < length; z++) {
-                    if (!grid[x][y][z] && !visited[x][y][z]) {
-                        if (!canFindBoundary(visited, x, y, z)) {
-                            return false;
-                        }
-                    }
-                }
-            }
-        }
-        return true;
-    }
-
-    private boolean canFindBoundary(boolean[][][] visited, int x, int y, int z) {
-        int length = grid.length;
-
-        if (x < 0 || y < 0 || z < 0 || x >= length || y >= length || z >= length) {
-            return true;
-        }
-
-        if (visited[x][y][z] || grid[x][y][z]) {
-            return false;
-        }
-
-        visited[x][y][z] = true;
-
-        boolean isBoundary = false;
-
-        isBoundary |= canFindBoundary(visited, x + 1, y, z);
-        isBoundary |= canFindBoundary(visited, x - 1, y, z);
-        isBoundary |= canFindBoundary(visited, x, y + 1, z);
-        isBoundary |= canFindBoundary(visited, x, y - 1, z);
-        isBoundary |= canFindBoundary(visited, x, y, z + 1);
-        isBoundary |= canFindBoundary(visited, x, y, z - 1);
-
-        return isBoundary;
-    }
-
-    public void calculateDistanceVectors() {
-
-        double xDistance = 0;
-        double yDistance = 0;
-        double zDistance = 0;
-
-        // Iterate through the 3D array to find cubes and calculate distance vectors
-        for (int x = 0; x < grid.length; x++) {
-            for (int y = 0; y < grid[0].length; y++) {
-                for (int z = 0; z < grid[0][0].length; z++) {
-                    if (grid[x][y][z]) {
-                        Coordinate cube = new Coordinate(x, y, z);
-
-                        xDistance += Math.abs(cube.x() - this.centroid.x());
-                        yDistance += Math.abs(cube.y() - this.centroid.y());
-                        zDistance += Math.abs(cube.z() - this.centroid.z());
-                    }
-                }
-            }
-        }
-
-        this.distanceVectorsSum = xDistance + yDistance + zDistance;
-    }
-
-    public void calculateExposedVertices() {
-        int exposedVerticesCount = 0;
-
-        int xLength = grid.length;
-        int yLength = grid[0].length;
-        int zLength = grid[0][0].length;
-
-        int[][] dirs = {{1, 0, 0}, {-1, 0, 0}, {0, 1, 0}, {0, -1, 0}, {0, 0, 1}, {0, 0, -1}};
-
-        for (int x = 0; x < xLength; x++) {
-            for (int y = 0; y < yLength; y++) {
-                for (int z = 0; z < zLength; z++) {
-                    // Skip if this cell is empty
-                    if (!grid[x][y][z]) continue;
-
-                    for (int dx = 0; dx <= 1; dx++) {
-                        for (int dy = 0; dy <= 1; dy++) {
-                            for (int dz = 0; dz <= 1; dz++) {
-                                int exposedCount = 0;
-                                for (int[] dir : dirs) {
-                                    int newX = x + dx + dir[0];
-                                    int newY = y + dy + dir[1];
-                                    int newZ = z + dz + dir[2];
-                                    if (newX < 0 || newY < 0 || newZ < 0 ||
-                                            newX >= xLength || newY >= yLength || newZ >= zLength ||
-                                            !grid[newX][newY][newZ]) {
-                                        exposedCount++;
-                                    }
-                                }
-
-                                if (exposedCount >= 3) {
-                                    exposedVerticesCount += 1;
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        this.vertices = exposedVerticesCount;
-    }
-
     @Override
     public int hashCode() {
-        return ("" + this.edges + this.surfaceArea + this.vertices + this.volume + this.boundingBoxVolume + this.distanceVectorsSum).hashCode();
+        int hashCount = 0;
+        int xLen = grid.length;
+        int yLen = grid[0].length;
+        int zLen = grid[0][0].length;
+
+        for (int x = 0; x < xLen; x++) {
+            for (int y = 0; y < yLen; y++) {
+                for (int z = 0; z < zLen; z++) {
+                    if (grid[x][y][z] != null) {
+                        hashCount = 31 * hashCount + grid[x][y][z].hashCode();
+                    }
+                }
+            }
+        }
+
+        return hashCount;
     }
 
     @Override
@@ -403,18 +211,58 @@ public class Polycube {
         if (!(obj instanceof Polycube other)) {
             return false;
         }
-        if (this.edges != other.edges || this.surfaceArea != other.surfaceArea || this.vertices != other.vertices || this.volume != other.volume || this.boundingBoxVolume != other.boundingBoxVolume || this.distanceVectorsSum != other.distanceVectorsSum) {
-            return false;
-        }
 
-        return this.hashCode() == other.hashCode();
+        List<Cube> cubes = Arrays.stream(grid)
+                .flatMap(Arrays::stream)
+                .flatMap(Arrays::stream)
+                .filter(Objects::nonNull)
+                .sorted()
+                .toList();
+
+        List<Cube> otherCubes = Arrays.stream(other.grid)
+                .flatMap(Arrays::stream)
+                .flatMap(Arrays::stream)
+                .filter(Objects::nonNull)
+                .sorted()
+                .toList();
+
+        return cubes.equals(otherCubes);
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+
+        for (int z = 0; z < grid[0][0].length; z++) { // Iterating over the depth (z-axis)
+            sb.append("Layer ").append(z).append(":\n");
+
+            for (Cube[][] cubes : grid) { // Iterating over the height (y-axis)
+                for (int x = 0; x < grid[0].length; x++) { // Iterating over the width (x-axis)
+                    if (cubes[x][z] != null) {
+                        sb.append("[#]");
+                    } else {
+                        sb.append("[ ]");
+                    }
+                }
+                sb.append("\n");
+            }
+            sb.append("\n");
+        }
+        return sb.toString();
     }
 
     public void printMetrics() {
-        System.out.println("edges: " + edges);
-        System.out.println("surfaceArea: " + surfaceArea);
-        System.out.println("vertices: " + vertices);
-        System.out.println("volume: " + volume);
-        System.out.println("boundingBoxVolume: " + boundingBoxVolume);
+        System.out.println();
+        System.out.println("Volume: " + volume);
+        System.out.println("Bounding box: [" + this.grid.length + ", " + this.grid[0].length + ", " + this.grid[0][0].length + "]");
+        System.out.println("Distances map:");
+        Arrays.stream(grid)
+                .flatMap(Arrays::stream)
+                .flatMap(Arrays::stream)
+                .filter(Objects::nonNull)
+                .sorted()
+                .toList()
+                .forEach(System.out::println);
+        System.out.println();
     }
 }
