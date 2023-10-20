@@ -18,15 +18,15 @@ n	translation 	3-d rotation    4-d rotation
 
 
 Finished polycubes of size 10 in 5 seconds.
-1.  MonoCubes count: 1
-2.  DiCubes count: 1
-3.  TriCubes count: 2
-4.  TetraCubes count: 7
-5.  PentaCubes count: 23
-6.  HexaCubes count: 111
-7.  HeptaCubes count: 598
-8.  OctaCubes count: 3744
-9.  NonaCubes count: 24965
-10. DecaCubes count: 175583
+1     1
+2     1
+3     2
+4     7
+5     23
+6     112
+7     607
+8     3804
+9     25358
+10    177723
 
 http://kevingong.com/Polyominoes/Enumeration.html

@@ -7,7 +7,7 @@ import java.util.Objects;
 
 public class Polycube {
 
-    private final static double DECIMAL_ACCURACY = 10;
+    private final static double DECIMAL_ACCURACY = 17;
     private static final double SCALE = Math.pow(10, DECIMAL_ACCURACY);
 
     private Cube[][][] grid;
