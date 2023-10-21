@@ -1,9 +1,6 @@
 package model;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 public class Polycube {
 
@@ -100,6 +97,35 @@ public class Polycube {
 
     public List<Coordinate> getValidNewCubePlacements() {
         this.addBuffer();
+
+        if (volume < (grid.length * grid[0].length * grid[0][0].length) - volume) {
+            return findPlacementsFromCubes();
+        } else {
+            return findPlacementsFromBlankSpaces();
+        }
+    }
+
+    public List<Coordinate> findPlacementsFromCubes() {
+        List<Coordinate> validPlacements = new ArrayList<>();
+
+        int xSize = grid.length;
+        int ySize = grid[0].length;
+        int zSize = grid[0][0].length;
+
+        for (int x = 0; x < xSize; x++) {
+            for (int y = 0; y < ySize; y++) {
+                for (int z = 0; z < zSize; z++) {
+                    if (this.grid[x][y][z] != null) {
+                        validPlacements.addAll(getBlankNeighbors(x, y, z));
+                    }
+                }
+            }
+        }
+
+        return validPlacements;
+    }
+
+    public List<Coordinate> findPlacementsFromBlankSpaces() {
         List<Coordinate> validPlacements = new ArrayList<>();
         int xSize = grid.length;
         int ySize = grid[0].length;
@@ -108,15 +134,7 @@ public class Polycube {
         for (int x = 0; x < xSize; x++) {
             for (int y = 0; y < ySize; y++) {
                 for (int z = 0; z < zSize; z++) {
-                    if (this.grid[x][y][z] != null) continue;
-
-                    if ((x > 0 && this.grid[x - 1][y][z] != null) ||
-                            (x < xSize - 1 && this.grid[x + 1][y][z] != null) ||
-                            (y > 0 && this.grid[x][y - 1][z] != null) ||
-                            (y < ySize - 1 && this.grid[x][y + 1][z] != null) ||
-                            (z > 0 && this.grid[x][y][z - 1] != null) ||
-                            (z < zSize - 1 && this.grid[x][y][z + 1] != null)) {
-
+                    if (this.grid[x][y][z] == null && hasCubeNeighbor(x, y, z)) {
                         validPlacements.add(new Coordinate(x, y, z));
                     }
                 }
@@ -124,6 +142,35 @@ public class Polycube {
         }
 
         return validPlacements;
+    }
+
+    private boolean hasCubeNeighbor(int x, int y, int z) {
+        int xSize = grid.length;
+        int ySize = grid[0].length;
+        int zSize = grid[0][0].length;
+
+        return (x > 0 && this.grid[x - 1][y][z] != null) ||
+                (x < xSize - 1 && this.grid[x + 1][y][z] != null) ||
+                (y > 0 && this.grid[x][y - 1][z] != null) ||
+                (y < ySize - 1 && this.grid[x][y + 1][z] != null) ||
+                (z > 0 && this.grid[x][y][z - 1] != null) ||
+                (z < zSize - 1 && this.grid[x][y][z + 1] != null);
+    }
+
+    private List<Coordinate> getBlankNeighbors(int x, int y, int z) {
+        int xSize = grid.length;
+        int ySize = grid[0].length;
+        int zSize = grid[0][0].length;
+        List<Coordinate> blankNeighbors = new ArrayList<>();
+
+        if (x > 0 && grid[x - 1][y][z] == null) blankNeighbors.add(new Coordinate(x - 1, y, z));
+        if (x < xSize - 1 && grid[x + 1][y][z] == null) blankNeighbors.add(new Coordinate(x + 1, y, z));
+        if (y > 0 && grid[x][y - 1][z] == null) blankNeighbors.add(new Coordinate(x, y - 1, z));
+        if (y < ySize - 1 && grid[x][y + 1][z] == null) blankNeighbors.add(new Coordinate(x, y + 1, z));
+        if (z > 0 && grid[x][y][z - 1] == null) blankNeighbors.add(new Coordinate(x, y, z - 1));
+        if (z < zSize - 1 && grid[x][y][z + 1] == null) blankNeighbors.add(new Coordinate(x, y, z + 1));
+
+        return blankNeighbors;
     }
 
     private void addBuffer() {
@@ -193,20 +240,16 @@ public class Polycube {
     @Override
     public int hashCode() {
         int hashCount = 0;
-        int xLen = grid.length;
-        int yLen = grid[0].length;
-        int zLen = grid[0][0].length;
 
-        for (int x = 0; x < xLen; x++) {
-            for (int y = 0; y < yLen; y++) {
-                for (int z = 0; z < zLen; z++) {
-                    if (grid[x][y][z] != null) {
-                        hashCount += grid[x][y][z].hashCode();
+        for (Cube[][] layer : grid) {
+            for (Cube[] row : layer) {
+                for (Cube cell : row) {
+                    if (cell != null) {
+                        hashCount += cell.hashCode();
                     }
                 }
             }
         }
-
         return hashCount;
     }
 
@@ -216,21 +259,27 @@ public class Polycube {
             return false;
         }
 
-        int[] cubeHashes = Arrays.stream(grid)
+        if (grid.length * grid[0].length * grid[0][0].length != other.grid.length * other.grid[0].length * other.grid[0][0].length) {
+            return false;
+        }
+
+        int[] hashes = Arrays.stream(grid)
                 .flatMap(Arrays::stream)
                 .flatMap(Arrays::stream)
                 .filter(Objects::nonNull)
                 .mapToInt(Cube::hashCode)
-                .sorted().toArray();
+                .sorted()
+                .toArray();
 
         int[] otherHashes = Arrays.stream(other.grid)
                 .flatMap(Arrays::stream)
                 .flatMap(Arrays::stream)
                 .filter(Objects::nonNull)
                 .mapToInt(Cube::hashCode)
-                .sorted().toArray();
+                .sorted()
+                .toArray();
 
-        return Arrays.equals(cubeHashes, otherHashes);
+        return Arrays.equals(hashes, otherHashes);
     }
 
     @Override
@@ -256,7 +305,6 @@ public class Polycube {
     }
 
     public void printMetrics() {
-        System.out.println();
         System.out.println("Volume: " + volume);
         System.out.println("Bounding box: [" + this.grid.length + ", " + this.grid[0].length + ", " + this.grid[0][0].length + "]");
         System.out.println("HashCode: " + this.hashCode());
