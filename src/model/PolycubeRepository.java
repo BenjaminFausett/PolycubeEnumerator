@@ -47,6 +47,8 @@ public class PolycubeRepository {
         octadecaCubes = new HashSet<>();
         nonadecaCubes = new HashSet<>();
         icosiCubes = new HashSet<>();
+
+        monoCubes.add(new Polycube());
     }
 
     public void add(Polycube polycube) {

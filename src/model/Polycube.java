@@ -95,7 +95,7 @@ public class Polycube {
         }
     }
 
-    public List<Coordinate> getValidNewCubePlacements() {
+    public Collection<Coordinate> getValidNewCubePlacements() {
         this.addBuffer();
 
         if (volume < (grid.length * grid[0].length * grid[0][0].length) - volume) {
@@ -105,8 +105,8 @@ public class Polycube {
         }
     }
 
-    public List<Coordinate> findPlacementsFromCubes() {
-        List<Coordinate> validPlacements = new ArrayList<>();
+    public Set<Coordinate> findPlacementsFromCubes() {
+        Set<Coordinate> validPlacements = new HashSet<>();
 
         int xSize = grid.length;
         int ySize = grid[0].length;
