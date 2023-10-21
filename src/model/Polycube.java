@@ -5,7 +5,7 @@ import java.util.stream.Collectors;
 
 public class Polycube {
 
-    private static final boolean debugMode = true;
+    private static final boolean debugMode = false;
     private static final double DECIMAL_ACCURACY = 17;
     private static final double SCALE = Math.pow(10, DECIMAL_ACCURACY);
 
@@ -81,23 +81,7 @@ public class Polycube {
         int ySize = grid[0].length;
         int zSize = grid[0][0].length;
 
-        int neighborCount = 0;
-        for (int[] dir : DIRECTIONS) {
-            int x = coordinate.x() + dir[0];
-            int y = coordinate.y() + dir[1];
-            int z = coordinate.z() + dir[2];
-
-            if(x < 0 || x >= xSize || y < 0 || y >= ySize || z < 0 || z >= zSize) {
-                continue;
-            }
-
-            if (grid[x][y][z] != null) {
-                neighborCount += 1;
-                grid[x][y][z].incrementNeighborCount();
-            }
-        }
-
-        this.grid[coordinate.x()][coordinate.y()][coordinate.z()] = new Cube(neighborCount);
+        this.grid[coordinate.x()][coordinate.y()][coordinate.z()] = new Cube();
 
         for (int x = 0; x < xSize; x++) {
             for (int y = 0; y < ySize; y++) {
@@ -215,39 +199,6 @@ public class Polycube {
         this.grid = shrunkGrid;
     }
 
-    private int getConnectedFaces() {
-        int connectedFaces = 0;
-
-        for (int i = 0; i < grid.length; i++) {
-            for (int j = 0; j < grid[i].length; j++) {
-                for (int k = 0; k < grid[i][j].length; k++) {
-                    if (grid[i][j][k] != null) {
-                        for (int[] dir : DIRECTIONS) {
-                            int x = i + dir[0];
-                            int y = j + dir[1];
-                            int z = k + dir[2];
-                            if (isInside(x, y, z) && grid[x][y][z] != null) {
-                                connectedFaces++;
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        if (connectedFaces % 2 == 0) {
-            return connectedFaces / 2;
-        } else {
-            return (connectedFaces / 2) + 1;
-        }
-    }
-
-    private boolean isInside(int x, int y, int z) {
-        return x >= 0 && x < grid.length
-                && y >= 0 && y < grid[x].length
-                && z >= 0 && z < grid[x][y].length;
-    }
-
     public double[] getCenter() {
         int sumX = 0;
         int sumY = 0;
@@ -274,43 +225,197 @@ public class Polycube {
         return new double[]{(double) sumX / count, (double) sumY / count, (double) sumZ / count};
     }
 
-    public boolean hasClearPathToBoundary(int x, int y, int z, String direction) {
+    private boolean hasClearPathToBoundary(int x, int y, int z, String direction) {
         switch (direction) {
-            case "front" -> {
+            case "low x":
                 for (int i = x + 1; i < grid.length; i++) {
                     if (grid[i][y][z] != null) return false;
                 }
-            }
-            case "back" -> {
-                for (int i = x - 1; i >= 0; i--) {
+                break;
+            case "high x":
+                for (int i = 0; i < x; i++) {
                     if (grid[i][y][z] != null) return false;
                 }
-            }
-            case "left" -> {
-                for (int j = y - 1; j >= 0; j--) {
-                    if (grid[x][j][z] != null) return false;
-                }
-            }
-            case "right" -> {
+                break;
+            case "low y":
                 for (int j = y + 1; j < grid[0].length; j++) {
                     if (grid[x][j][z] != null) return false;
                 }
-            }
-            case "top" -> {
+                break;
+            case "high y":
+                for (int j = 0; j < y; j++) {
+                    if (grid[x][j][z] != null) return false;
+                }
+                break;
+            case "low z":
                 for (int k = z + 1; k < grid[0][0].length; k++) {
                     if (grid[x][y][k] != null) return false;
                 }
-            }
-            case "bottom" -> {
-                for (int k = z - 1; k >= 0; k--) {
+                break;
+            case "high z":
+                for (int k = 0; k < z; k++) {
                     if (grid[x][y][k] != null) return false;
                 }
-            }
-            default -> throw new IllegalArgumentException("Invalid direction");
+                break;
         }
         return true;
     }
 
+    private int getNumberFromLowX() {
+        int xLen = grid.length;
+        int yLen = grid[0].length;
+        int zLen = grid[0][0].length;
+
+        for (int x = 0; x < xLen; x++) {
+            int cubesInCurrentLayer = 0;
+            boolean foundTargetLayer = false;
+
+            for (int y = 0; y < yLen; y++) {
+                for (int z = 0; z < zLen; z++) {
+                    if (grid[x][y][z] != null && hasClearPathToBoundary(x, y, z, "low x")) {
+                        cubesInCurrentLayer++;
+                        foundTargetLayer = true;
+                    }
+                }
+            }
+
+            if (foundTargetLayer) {
+                return cubesInCurrentLayer;
+            }
+        }
+
+        return 0;
+    }
+
+    private int getNumberFromHighX() {
+        int xLen = grid.length;
+        int yLen = grid[0].length;
+        int zLen = grid[0][0].length;
+
+        for (int x = xLen - 1; x >= 0; x--) {
+            int cubesInCurrentLayer = 0;
+            boolean foundTargetLayer = false;
+
+            for (int y = 0; y < yLen; y++) {
+                for (int z = 0; z < zLen; z++) {
+                    if (grid[x][y][z] != null && hasClearPathToBoundary(x, y, z, "high x")) {
+                        cubesInCurrentLayer++;
+                        foundTargetLayer = true;
+                    }
+                }
+            }
+
+            if (foundTargetLayer) {
+                return cubesInCurrentLayer;
+            }
+        }
+
+        return 0;
+    }
+
+    private int getNumberFromLowY() {
+        int xLen = grid.length;
+        int yLen = grid[0].length;
+        int zLen = grid[0][0].length;
+
+        for (int y = 0; y < yLen; y++) {
+            int cubesInCurrentLayer = 0;
+            boolean foundTargetLayer = false;
+
+            for (int x = 0; x < xLen; x++) {
+                for (int z = 0; z < zLen; z++) {
+                    if (grid[x][y][z] != null && hasClearPathToBoundary(x, y, z, "low y")) {
+                        cubesInCurrentLayer++;
+                        foundTargetLayer = true;
+                    }
+                }
+            }
+
+            if (foundTargetLayer) {
+                return cubesInCurrentLayer;
+            }
+        }
+
+        return 0;
+    }
+
+    private int getNumberFromHighY() {
+        int xLen = grid.length;
+        int yLen = grid[0].length;
+        int zLen = grid[0][0].length;
+
+        for (int y = yLen - 1; y >= 0; y--) {
+            int cubesInCurrentLayer = 0;
+            boolean foundTargetLayer = false;
+
+            for (int x = 0; x < xLen; x++) {
+                for (int z = 0; z < zLen; z++) {
+                    if (grid[x][y][z] != null && hasClearPathToBoundary(x, y, z, "high y")) {
+                        cubesInCurrentLayer++;
+                        foundTargetLayer = true;
+                    }
+                }
+            }
+
+            if (foundTargetLayer) {
+                return cubesInCurrentLayer;
+            }
+        }
+
+        return 0;
+    }
+
+    private int getNumberFromLowZ() {
+        int xLen = grid.length;
+        int yLen = grid[0].length;
+        int zLen = grid[0][0].length;
+
+        for (int z = 0; z < zLen; z++) {
+            int cubesInCurrentLayer = 0;
+            boolean foundTargetLayer = false;
+
+            for (int x = 0; x < xLen; x++) {
+                for (int y = 0; y < yLen; y++) {
+                    if (grid[x][y][z] != null && hasClearPathToBoundary(x, y, z, "low z")) {
+                        cubesInCurrentLayer++;
+                        foundTargetLayer = true;
+                    }
+                }
+            }
+
+            if (foundTargetLayer) {
+                return cubesInCurrentLayer;
+            }
+        }
+
+        return 0;
+    }
+
+    private int getNumberFromHighZ() {
+        int xLen = grid.length;
+        int yLen = grid[0].length;
+        int zLen = grid[0][0].length;
+
+        for (int z = zLen - 1; z >= 0; z--) {
+            int cubesInCurrentLayer = 0;
+            boolean foundTargetLayer = false;
+
+            for (int x = 0; x < xLen; x++) {
+                for (int y = 0; y < yLen; y++) {
+                    if (grid[x][y][z] != null && hasClearPathToBoundary(x, y, z, "high z")) {
+                        cubesInCurrentLayer++;
+                        foundTargetLayer = true;
+                    }
+                }
+            }
+
+            if (foundTargetLayer) {
+                return cubesInCurrentLayer;
+            }
+        }
+
+        return 0;
+    }
 
     @Override
     public int hashCode() {
@@ -352,9 +457,18 @@ public class Polycube {
                 .collect(Collectors.toSet());
 
         boolean equalHashSet = hashes.equals(otherHashes);
-        boolean equalConnectedFaces = this.getConnectedFaces() == other.getConnectedFaces();
 
-        if (debugMode && equalHashSet && equalConnectedFaces && !PolycubeComparator.trueEquals(this, other)) {
+        if(!equalHashSet) {
+            return false;
+        }
+
+        boolean equalBenNumbers = Arrays.equals(getBensNumbers(), other.getBensNumbers());
+
+        if(!equalBenNumbers) {
+            return false;
+        }
+
+        if (debugMode && !PolycubeComparator.trueEquals(this, other)) {
             System.out.println("FOUND TWO CUBES WITH SAME HASHS BUT DIFFERENT");
             System.out.println("CUBE 1: ");
             System.out.println(this);
@@ -365,9 +479,7 @@ public class Polycube {
             return false;
         }
 
-        //boolean equalCenter = Arrays.equals(Arrays.stream(this.getCenter()).sorted().toArray(), Arrays.stream(other.getCenter()).sorted().toArray());
-
-        return equalHashSet && equalConnectedFaces;
+        return true;
     }
 
     public Cube[][][] getGrid() {
@@ -384,7 +496,7 @@ public class Polycube {
             for (Cube[][] cubes : grid) {
                 for (int x = 0; x < grid[0].length; x++) {
                     if (cubes[x][z] != null) {
-                        sb.append("[" + cubes[x][z].getNeighborCounts() + "]");
+                        sb.append("[#]");
                     } else {
                         sb.append("[ ]");
                     }
@@ -400,7 +512,7 @@ public class Polycube {
         System.out.println("Volume: " + volume);
         System.out.println("Bounding box: [" + this.grid.length + ", " + this.grid[0].length + ", " + this.grid[0][0].length + "]");
         System.out.println("HashCode: " + this.hashCode());
-        System.out.println("Connected Faces: " + this.getConnectedFaces());
+        System.out.println("Ben's number: " + Arrays.toString(getBensNumbers()));
         System.out.println("Center mass: " + Arrays.toString(this.getCenter()));
         System.out.println("Cube Hashes: ");
         Arrays.stream(grid)
@@ -410,5 +522,18 @@ public class Polycube {
                 .mapToInt(Cube::hashCode)
                 .sorted()
                 .forEach(System.out::println);
+    }
+
+    private int[] getBensNumbers() {
+        int[] counts = new int[6];
+        counts[0] = getNumberFromLowX();
+        counts[1] = getNumberFromHighX();
+        counts[2] = getNumberFromLowY();
+        counts[3] = getNumberFromHighY();
+        counts[4] = getNumberFromLowZ();
+        counts[5] = getNumberFromHighZ();
+
+        Arrays.sort(counts);
+        return counts;
     }
 }
