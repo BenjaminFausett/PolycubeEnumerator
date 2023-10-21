@@ -5,6 +5,8 @@ import java.util.stream.Collectors;
 
 public class Polycube {
 
+    private static final boolean debugMode = false;
+
     private final static double DECIMAL_ACCURACY = 17;
     private static final double SCALE = Math.pow(10, DECIMAL_ACCURACY);
 
@@ -193,8 +195,8 @@ public class Polycube {
         int hashCount = 0;
 
         for (Cube[][] layer : grid) {
-            for (Cube[] row: layer) {
-                for (Cube cell: row) {
+            for (Cube[] row : layer) {
+                for (Cube cell : row) {
                     if (cell != null) {
                         hashCount += cell.hashCode();
                     }
@@ -227,7 +229,24 @@ public class Polycube {
                 .boxed()
                 .collect(Collectors.toSet());
 
-        return hashes.equals(otherHashes);
+        boolean equalHashSet = hashes.equals(otherHashes);
+
+        if (debugMode && equalHashSet && !PolycubeComparator.trueEquals(this, other)) {
+            System.out.println("FOUND TWO CUBES WITH SAME HASHS BUT DIFFERENT");
+            System.out.println("CUBE 1: ");
+            System.out.println(this);
+            this.printMetrics();
+            System.out.println("\nCUBE 2: ");
+            System.out.println(other);
+            other.printMetrics();
+            return false;
+        }
+
+        return equalHashSet;
+    }
+
+    public Cube[][][] getGrid() {
+        return this.grid;
     }
 
     @Override
@@ -257,13 +276,13 @@ public class Polycube {
         System.out.println("Volume: " + volume);
         System.out.println("Bounding box: [" + this.grid.length + ", " + this.grid[0].length + ", " + this.grid[0][0].length + "]");
         System.out.println("HashCode: " + this.hashCode());
-        System.out.println("Distances map:");
+        System.out.println("Cube Hashes: ");
         Arrays.stream(grid)
                 .flatMap(Arrays::stream)
                 .flatMap(Arrays::stream)
                 .filter(Objects::nonNull)
+                .mapToInt(Cube::hashCode)
                 .sorted()
-                .toList()
                 .forEach(System.out::println);
         System.out.println();
     }
