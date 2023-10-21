@@ -4,6 +4,7 @@ import model.Coordinate;
 import model.Polycube;
 import model.PolycubeRepository;
 
+import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
 
@@ -26,16 +27,15 @@ public class PolycubeCalculator {
                     Polycube candidateCube = new Polycube(polycube, coordinate);
                     if (!polycubeRepository.exists(candidateCube)) {
                         polycubeRepository.add(candidateCube);
-
-//                        if (candidateCube.getVolume() == -1) {
-//                            candidateCube.printMetrics();
-//                            System.out.println(candidateCube);
-//                        }
                     }
                 });
             });
 
-            System.out.println("Finished polycubes of size " + (i) + " in " + (Instant.now().getEpochSecond() - start.getEpochSecond()) + " seconds.");
+            Duration duration = Duration.between(start, Instant.now());
+            double seconds = duration.getSeconds() + (double) duration.getNano() / 1_000_000_000;
+            String formattedDuration = String.format("%.1f", seconds);
+
+            System.out.println((i) + " finished in " + formattedDuration + " seconds");
         }
 
         System.out.println(polycubeRepository);

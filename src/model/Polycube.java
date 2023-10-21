@@ -1,9 +1,7 @@
 package model;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class Polycube {
 
@@ -193,15 +191,12 @@ public class Polycube {
     @Override
     public int hashCode() {
         int hashCount = 0;
-        int xLen = grid.length;
-        int yLen = grid[0].length;
-        int zLen = grid[0][0].length;
 
-        for (int x = 0; x < xLen; x++) {
-            for (int y = 0; y < yLen; y++) {
-                for (int z = 0; z < zLen; z++) {
-                    if (grid[x][y][z] != null) {
-                        hashCount += grid[x][y][z].hashCode();
+        for (Cube[][] layer : grid) {
+            for (Cube[] row: layer) {
+                for (Cube cell: row) {
+                    if (cell != null) {
+                        hashCount += cell.hashCode();
                     }
                 }
             }
@@ -216,21 +211,23 @@ public class Polycube {
             return false;
         }
 
-        int[] cubeHashes = Arrays.stream(grid)
+        Set<Integer> hashes = Arrays.stream(grid)
                 .flatMap(Arrays::stream)
                 .flatMap(Arrays::stream)
                 .filter(Objects::nonNull)
                 .mapToInt(Cube::hashCode)
-                .sorted().toArray();
+                .boxed()
+                .collect(Collectors.toSet());
 
-        int[] otherHashes = Arrays.stream(other.grid)
+        Set<Integer> otherHashes = Arrays.stream(other.grid)
                 .flatMap(Arrays::stream)
                 .flatMap(Arrays::stream)
                 .filter(Objects::nonNull)
                 .mapToInt(Cube::hashCode)
-                .sorted().toArray();
+                .boxed()
+                .collect(Collectors.toSet());
 
-        return Arrays.equals(cubeHashes, otherHashes);
+        return hashes.equals(otherHashes);
     }
 
     @Override
