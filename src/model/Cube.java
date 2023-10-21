@@ -27,7 +27,7 @@ public class Cube implements Comparable<Cube> {
         } else {
             this.distances.put(distance, 1);
         }
-        this.hashCode = 0;
+        this.hashCode = this.distances.hashCode();
     }
 
     @Override
