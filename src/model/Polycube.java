@@ -1,12 +1,12 @@
 package model;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class Polycube {
 
     private static final boolean DEBUG_MODE = false;
-    private static final int DECIMAL_ACCURACY = 12;
+    private static final boolean PERFECT_MODE = false;
+    private static final int DECIMAL_ACCURACY = 16;
     private static final double SCALE = Math.pow(10, DECIMAL_ACCURACY);
     private static final int[][] DIRECTIONS = {
             {0, 1, 0},  // up
@@ -430,49 +430,10 @@ public class Polycube {
         return hashCount;
     }
 
+    //as a reminder to future ben, this equals method only ever runs if the hashes of the two objects are the same, so dont recheck that
     @Override
     public boolean equals(Object obj) {
         if (!(obj instanceof Polycube other)) {
-            return false;
-        }
-
-        Set<Integer> hashes = Arrays.stream(grid)
-                .flatMap(Arrays::stream)
-                .flatMap(Arrays::stream)
-                .filter(Objects::nonNull)
-                .mapToInt(Cube::hashCode)
-                .boxed()
-                .collect(Collectors.toSet());
-
-        Set<Integer> otherHashes = Arrays.stream(other.grid)
-                .flatMap(Arrays::stream)
-                .flatMap(Arrays::stream)
-                .filter(Objects::nonNull)
-                .mapToInt(Cube::hashCode)
-                .boxed()
-                .collect(Collectors.toSet());
-
-        if (!hashes.equals(otherHashes)) {
-            return false;
-        }
-
-        int[] neighborCount = Arrays.stream(grid)
-                .flatMap(Arrays::stream)
-                .flatMap(Arrays::stream)
-                .filter(Objects::nonNull)
-                .mapToInt(Cube::getNeighborCount)
-                .sorted()
-                .toArray();
-
-        int[] otherNeighborCount = Arrays.stream(other.grid)
-                .flatMap(Arrays::stream)
-                .flatMap(Arrays::stream)
-                .filter(Objects::nonNull)
-                .mapToInt(Cube::getNeighborCount)
-                .sorted()
-                .toArray();
-
-        if (!Arrays.equals(neighborCount, otherNeighborCount)) {
             return false;
         }
 
@@ -480,14 +441,16 @@ public class Polycube {
             return false;
         }
 
-        if (DEBUG_MODE && !PolycubeComparator.trueEquals(this, other)) {
-            System.out.println("\n~~~Two different cubes that passed all equality checks found~~~");
-            System.out.println("Cube 1: ");
-            System.out.println(this);
-            this.printMetrics();
-            System.out.println("\nCube 2: ");
-            System.out.println(other);
-            other.printMetrics();
+        if (PERFECT_MODE && !PolycubeComparator.trueEquals(this, other)) {
+            if(DEBUG_MODE) {
+                System.out.println("\n~~~Two different cubes that passed all equality checks found~~~");
+                System.out.println("Cube 1: ");
+                System.out.println(this);
+                this.printMetrics();
+                System.out.println("\nCube 2: ");
+                System.out.println(other);
+                other.printMetrics();
+            }
             return false;
         }
 
@@ -504,7 +467,7 @@ public class Polycube {
             for (Cube[][] cubes : grid) {
                 for (int x = 0; x < grid[0].length; x++) {
                     if (cubes[x][z] != null) {
-                        sb.append("[" + cubes[x][z].getNeighborCount() + "]");
+                        sb.append("[").append(cubes[x][z].getNeighborCount()).append("]");
                     } else {
                         sb.append("[ ]");
                     }
@@ -528,6 +491,7 @@ public class Polycube {
     //BUT - it only considers faces that are on the layer that is furthest from the viewing side that that contains a visible face.
     //Hard to explain but spin a real polycube around in your hand and look at it from any 90 degree angle. Bens number is the count of visible faces from the layer furthest from your face that still have a visible face.
     private int[] getBensNumbers() {
+        //TODO make these methods return a hashmap which is a collection of how many faces can see the boundry at each layer. add all that up into one master hashmap using putAll, then hash that to get Bens Hash!
         int[] counts = new int[6];
         counts[0] = getNumberFromLowX();
         counts[1] = getNumberFromHighX();

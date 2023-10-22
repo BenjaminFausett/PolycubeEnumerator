@@ -23,17 +23,13 @@ public class Cube implements Comparable<Cube> {
         this.hashCode += Double.hashCode(distance);
     }
 
-    public void setNeighborCount(int neighborCount) {
-        this.neighborCount = neighborCount;
-    }
-
     public void incrementNeighborCount() {
         this.neighborCount += 1;
     }
 
     @Override
     public int hashCode() {
-        return this.hashCode + neighborCount;
+        return (this.hashCode + String.valueOf(neighborCount)).hashCode();
     }
 
     @Override
