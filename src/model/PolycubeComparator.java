@@ -16,6 +16,9 @@ public class PolycubeComparator {
         }
 
         for (int x = 0; x < 2; x++) { // Rotate about X-axis (original and one more rotation)
+            grid1 = rotateX(grid1);
+            reflectedGrid1 = rotateX(reflectedGrid1);
+
             for (int z = 0; z < 4; z++) { // Rotate about Z-axis
                 grid1 = rotateZ(grid1);
                 reflectedGrid1 = rotateZ(reflectedGrid1);
@@ -25,17 +28,15 @@ public class PolycubeComparator {
                 }
 
                 for (int y = 0; y < 4; y++) { // Rotate about Y-axis
+                    grid1 = rotateY(grid1);
+                    reflectedGrid1 = rotateY(reflectedGrid1);
+
                     if (compareGrids(grid1, polycube2.getGrid()) || compareGrids(reflectedGrid1, polycube2.getGrid())) {
                         return true;
                     }
-
-                    grid1 = rotateY(grid1);
-                    reflectedGrid1 = rotateY(reflectedGrid1);
                 }
             }
-            // After completing all Z and Y rotations for the current X orientation, rotate about X-axis
-            grid1 = rotateX(grid1);
-            reflectedGrid1 = rotateX(reflectedGrid1);
+
         }
         return false;
     }

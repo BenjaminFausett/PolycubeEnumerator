@@ -16,8 +16,8 @@ n	translation 	3-d rotation    4-d rotation
 15	188625900446	7859514470	    3934285874
 16	1435074454755	59795121480	    29915913663
 
-
-11 finished in 24.7 seconds
+perfectMode = false
+11 finished in 24.5 seconds
 1     1
 2     1
 3     2
@@ -26,8 +26,22 @@ n	translation 	3-d rotation    4-d rotation
 6     112
 7     607
 8     3811
-9     25410
+9     25410 - 3 off
 10    178049
 11    1279394
+
+perfectMode = true
+11 finished in 136.5 seconds
+1     1
+2     1
+3     2
+4     7
+5     23
+6     112
+7     607
+8     3811
+9     25413
+10    178083
+11    1279537
 
 http://kevingong.com/Polyominoes/Enumeration.html

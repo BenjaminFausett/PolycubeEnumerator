@@ -42,7 +42,7 @@ public class Cube implements Comparable<Cube> {
         if (!(obj instanceof Cube other)) {
             return false;
         }
-        return this.hashCode() == other.hashCode();
+        return euclideanDistancesSum == other.euclideanDistancesSum && manhattanDistancesSum == other.manhattanDistancesSum;
     }
 
     @Override

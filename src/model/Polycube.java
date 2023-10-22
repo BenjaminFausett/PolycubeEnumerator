@@ -230,7 +230,7 @@ public class Polycube {
             return false;
         }
 
-        if (!Arrays.equals(getBensNumbers(), other.getBensNumbers())) {
+        if(!Arrays.equals(this.getBensNumbers(), other.getBensNumbers())) {
             return false;
         }
 
@@ -276,7 +276,7 @@ public class Polycube {
         System.out.println("Volume: " + volume);
         System.out.println("Bounding box: [" + this.grid.length + ", " + this.grid[0].length + ", " + this.grid[0][0].length + "]");
         System.out.println("HashCode: " + this.hashCode());
-        System.out.println("Ben's numbers: " + Arrays.toString(getBensNumbers()));
+        //System.out.println("Ben's numbers: " + Arrays.toString(getBensNumbers()));
     }
 
     //Called Bens numbers because I could not find a good name for this metric.
