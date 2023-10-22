@@ -1,9 +1,14 @@
 package model;
 
+import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.HashSet;
 import java.util.List;
 
 public class PolycubeRepository {
+
+    private int largestCompletedN;
 
     private final HashSet<Polycube> monoCubes;    //1
     private final HashSet<Polycube> diCubes;      //2
@@ -26,7 +31,7 @@ public class PolycubeRepository {
     private final HashSet<Polycube> nonadecaCubes;  //19
     private final HashSet<Polycube> icosiCubes;     //20
 
-    public PolycubeRepository() {
+    public PolycubeRepository() throws IOException, ClassNotFoundException {
         monoCubes = new HashSet<>();
         diCubes = new HashSet<>();
         triCubes = new HashSet<>();
@@ -47,9 +52,11 @@ public class PolycubeRepository {
         octadecaCubes = new HashSet<>();
         nonadecaCubes = new HashSet<>();
         icosiCubes = new HashSet<>();
+
+        this.loadBackup();
     }
 
-    public void add(Polycube polycube) {
+    public synchronized void add(Polycube polycube) {
         switch (polycube.getVolume()) {
             case 1 -> monoCubes.add(polycube);
             case 2 -> diCubes.add(polycube);
@@ -271,5 +278,109 @@ public class PolycubeRepository {
         }
 
         return s.toString();
+    }
+
+    public int getLargestCompletedN() {
+        return largestCompletedN;
+    }
+
+    public void backupPolyCubes(int n) throws IOException {
+        String filename = n + "_cubes.ser";
+        FileOutputStream fileOut = new FileOutputStream(filename);
+        ObjectOutputStream out = new ObjectOutputStream(fileOut);
+        out.writeObject(this.getPolycubes(n));
+        fileOut.close();
+        out.close();
+    }
+
+    private void loadBackup() throws IOException, ClassNotFoundException {
+        int n = 20;
+        while(Files.notExists(Paths.get(n + "_cubes.ser")) && n > 0) {
+            n--;
+        }
+
+        if(n == 0) {//no backup so starting from 1. ill be a pal and generate all the cubes for n = 1 for you
+            Polycube monoCube = new Polycube();
+            monoCubes.add(monoCube);
+            largestCompletedN = 1;
+            return;
+        }
+        System.out.println("Found backup file of size n = " + n);
+
+        this.largestCompletedN = n;
+
+        try {
+            FileInputStream fileIn = new FileInputStream(n + "_cubes.ser");
+            ObjectInputStream in = new ObjectInputStream(fileIn);
+            List<Polycube> polycubes = (List<Polycube>) in.readObject();
+
+            in.close();
+            fileIn.close();
+
+            switch (n) {
+                case 1 -> monoCubes.addAll(polycubes);
+                case 2 -> diCubes.addAll(polycubes);
+                case 3 -> triCubes.addAll(polycubes);
+                case 4 -> tetraCubes.addAll(polycubes);
+                case 5 -> pentaCubes.addAll(polycubes);
+                case 6 -> hexaCubes.addAll(polycubes);
+                case 7 -> heptaCubes.addAll(polycubes);
+                case 8 -> octaCubes.addAll(polycubes);
+                case 9 -> nonaCubes.addAll(polycubes);
+                case 10 -> decaCubes.addAll(polycubes);
+                case 11 -> undecaCubes.addAll(polycubes);
+                case 12 -> dodecaCubes.addAll(polycubes);
+                case 13 -> tridecaCubes.addAll(polycubes);
+                case 14 -> tetradecaCubes.addAll(polycubes);
+                case 15 -> pentadecaCubes.addAll(polycubes);
+                case 16 -> hexadecaCubes.addAll(polycubes);
+                case 17 -> heptadecaCubes.addAll(polycubes);
+                case 18 -> octadecaCubes.addAll(polycubes);
+                case 19 -> nonadecaCubes.addAll(polycubes);
+                case 20 -> icosiCubes.addAll(polycubes);
+            }
+        } catch (IOException | ClassNotFoundException e) {
+            throw e;
+        }
+    }
+
+    public void clearPolyCubes(int n) {
+        switch (n) {
+            case 1 -> monoCubes.clear();
+            case 2 -> diCubes.clear();
+            case 3 -> triCubes.clear();
+            case 4 -> tetraCubes.clear();
+            case 5 -> pentaCubes.clear();
+            case 6 -> hexaCubes.clear();
+            case 7 -> heptaCubes.clear();
+            case 8 -> octaCubes.clear();
+            case 9 -> nonaCubes.clear();
+            case 10 -> decaCubes.clear();
+            case 11 -> undecaCubes.clear();
+            case 12 -> dodecaCubes.clear();
+            case 13 -> tridecaCubes.clear();
+            case 14 -> tetradecaCubes.clear();
+            case 15 -> pentadecaCubes.clear();
+            case 16 -> hexadecaCubes.clear();
+            case 17 -> heptadecaCubes.clear();
+            case 18 -> octadecaCubes.clear();
+            case 19 -> nonadecaCubes.clear();
+            case 20 -> icosiCubes.clear();
+        }
+    }
+
+    public static void printBackupFileSizes() throws Exception {
+        int n = 1;
+        while(Files.exists(Paths.get(n + "_cubes.ser")) && n > 0) {
+            FileInputStream fileIn = new FileInputStream(n + "_cubes.ser");
+            ObjectInputStream in = new ObjectInputStream(fileIn);
+            List<Polycube> polycubes = (List<Polycube>) in.readObject();
+
+            System.out.printf("%-5s %d%n", n, polycubes.size());
+
+            in.close();
+            fileIn.close();
+            n++;
+        }
     }
 }

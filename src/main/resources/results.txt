@@ -45,3 +45,6 @@ perfectMode = true
 11    1279537
 
 http://kevingong.com/Polyominoes/Enumeration.html
+https://github.com/mikepound/cubes/issues/23
+
+1m24 for n=12

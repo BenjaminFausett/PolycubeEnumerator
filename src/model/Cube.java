@@ -1,6 +1,8 @@
 package model;
 
-public class Cube implements Comparable<Cube> {
+import java.io.Serializable;
+
+public class Cube implements Comparable<Cube>, Serializable {
 
     private int hashCode;
 

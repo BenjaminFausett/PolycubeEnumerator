@@ -1,8 +1,9 @@
 package model;
 
+import java.io.Serializable;
 import java.util.*;
 
-public class Polycube {
+public class Polycube implements Serializable {
 
     private static final boolean DEBUG_MODE = false;
     private static final boolean PERFECT_MODE = false;
