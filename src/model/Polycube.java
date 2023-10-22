@@ -5,8 +5,8 @@ import java.util.stream.Collectors;
 
 public class Polycube {
 
-    private static final boolean DEBUG_MODE = true;
-    private static final double DECIMAL_ACCURACY = 15;
+    private static final boolean DEBUG_MODE = false;
+    private static final int DECIMAL_ACCURACY = 12;
     private static final double SCALE = Math.pow(10, DECIMAL_ACCURACY);
     private static final int[][] DIRECTIONS = {
             {0, 1, 0},  // up
@@ -456,6 +456,26 @@ public class Polycube {
             return false;
         }
 
+        int[] neighborCount = Arrays.stream(grid)
+                .flatMap(Arrays::stream)
+                .flatMap(Arrays::stream)
+                .filter(Objects::nonNull)
+                .mapToInt(Cube::getNeighborCount)
+                .sorted()
+                .toArray();
+
+        int[] otherNeighborCount = Arrays.stream(other.grid)
+                .flatMap(Arrays::stream)
+                .flatMap(Arrays::stream)
+                .filter(Objects::nonNull)
+                .mapToInt(Cube::getNeighborCount)
+                .sorted()
+                .toArray();
+
+        if (!Arrays.equals(neighborCount, otherNeighborCount)) {
+            return false;
+        }
+
         if (!Arrays.equals(getBensNumbers(), other.getBensNumbers())) {
             return false;
         }
@@ -503,6 +523,10 @@ public class Polycube {
         System.out.println("Ben's numbers: " + Arrays.toString(getBensNumbers()));
     }
 
+    //Called Bens numbers because I could not find a good name for this metric.
+    //this finds how many visible faces there are when viewed from each of the 6 directions
+    //BUT - it only considers faces that are on the layer that is furthest from the viewing side that that contains a visible face.
+    //Hard to explain but spin a real polycube around in your hand and look at it from any 90 degree angle. Bens number is the count of visible faces from the layer furthest from your face that still have a visible face.
     private int[] getBensNumbers() {
         int[] counts = new int[6];
         counts[0] = getNumberFromLowX();
