@@ -27,6 +27,8 @@ public class PolycubeCalculator {
                     Polycube candidateCube = new Polycube(polycube, coordinate);
                     if (!polycubeRepository.exists(candidateCube)) {
                         polycubeRepository.add(candidateCube);
+//                        System.out.println(candidateCube);
+//                        candidateCube.printMetrics();
                     }
                 });
             });

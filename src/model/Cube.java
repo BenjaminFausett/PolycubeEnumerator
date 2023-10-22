@@ -3,13 +3,16 @@ package model;
 public class Cube implements Comparable<Cube> {
 
     private int hashCode;
+    private int neighborCount;
 
-    public Cube() {
+    public Cube(int neighborCount) {
         this.hashCode = 0;
+        this.neighborCount = neighborCount;
     }
 
     public Cube(Cube cube) {
         this.hashCode = cube.hashCode;
+        this.neighborCount = cube.neighborCount;
     }
 
     public Cube clone() {
@@ -20,9 +23,17 @@ public class Cube implements Comparable<Cube> {
         this.hashCode += Double.hashCode(distance);
     }
 
+    public void setNeighborCount(int neighborCount) {
+        this.neighborCount = neighborCount;
+    }
+
+    public void incrementNeighborCount() {
+        this.neighborCount += 1;
+    }
+
     @Override
     public int hashCode() {
-        return this.hashCode;
+        return this.hashCode + neighborCount;
     }
 
     @Override
@@ -38,4 +49,7 @@ public class Cube implements Comparable<Cube> {
         return this.hashCode() - other.hashCode();
     }
 
+    public int getNeighborCount() {
+        return this.neighborCount;
+    }
 }

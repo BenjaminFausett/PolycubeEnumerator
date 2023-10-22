@@ -5,10 +5,9 @@ import java.util.stream.Collectors;
 
 public class Polycube {
 
-    private static final boolean debugMode = false;
-    private static final double DECIMAL_ACCURACY = 17;
+    private static final boolean DEBUG_MODE = true;
+    private static final double DECIMAL_ACCURACY = 15;
     private static final double SCALE = Math.pow(10, DECIMAL_ACCURACY);
-
     private static final int[][] DIRECTIONS = {
             {0, 1, 0},  // up
             {0, -1, 0}, // down
@@ -74,6 +73,10 @@ public class Polycube {
         return this.volume;
     }
 
+    public Cube[][][] getGrid() {
+        return this.grid;
+    }
+
     public void addCube(Coordinate coordinate) {
         this.volume += 1;
 
@@ -81,7 +84,23 @@ public class Polycube {
         int ySize = grid[0].length;
         int zSize = grid[0][0].length;
 
-        this.grid[coordinate.x()][coordinate.y()][coordinate.z()] = new Cube();
+        int neighborCount = 0;
+        for (int[] dir : DIRECTIONS) {
+            int x = coordinate.x() + dir[0];
+            int y = coordinate.y() + dir[1];
+            int z = coordinate.z() + dir[2];
+
+            if (x < 0 || x >= xSize || y < 0 || y >= ySize || z < 0 || z >= zSize) {
+                continue;
+            }
+
+            if (grid[x][y][z] != null) {
+                neighborCount += 1;
+                grid[x][y][z].incrementNeighborCount();
+            }
+        }
+
+        this.grid[coordinate.x()][coordinate.y()][coordinate.z()] = new Cube(neighborCount);
 
         for (int x = 0; x < xSize; x++) {
             for (int y = 0; y < ySize; y++) {
@@ -119,14 +138,17 @@ public class Polycube {
                 for (int z = 0; z < zSize; z++) {
                     if (this.grid[x][y][z] != null) continue;
 
-                    if ((x > 0 && this.grid[x - 1][y][z] != null) ||
-                            (x < xSize - 1 && this.grid[x + 1][y][z] != null) ||
-                            (y > 0 && this.grid[x][y - 1][z] != null) ||
-                            (y < ySize - 1 && this.grid[x][y + 1][z] != null) ||
-                            (z > 0 && this.grid[x][y][z - 1] != null) ||
-                            (z < zSize - 1 && this.grid[x][y][z + 1] != null)) {
+                    for (int[] dir : DIRECTIONS) {
+                        int xOffset = x + dir[0];
+                        int yOffset = y + dir[1];
+                        int zOffset = z + dir[2];
 
-                        validPlacements.add(new Coordinate(x, y, z));
+                        if (xOffset < 0 || xOffset >= xSize || yOffset < 0 || yOffset >= ySize || zOffset < 0 || zOffset >= zSize) {
+                            continue;
+                        }
+                        if (this.grid[xOffset][yOffset][zOffset] != null) {
+                            validPlacements.add(new Coordinate(x, y, z));
+                        }
                     }
                 }
             }
@@ -197,32 +219,6 @@ public class Polycube {
         }
 
         this.grid = shrunkGrid;
-    }
-
-    public double[] getCenter() {
-        int sumX = 0;
-        int sumY = 0;
-        int sumZ = 0;
-        int count = 0;
-
-        int depth = grid.length;
-        int height = grid[0].length;
-        int width = grid[0][0].length;
-
-        for (int z = 0; z < depth; z++) {
-            for (int y = 0; y < height; y++) {
-                for (int x = 0; x < width; x++) {
-                    if (grid[z][y][x] != null) {
-                        sumX += x;
-                        sumY += y;
-                        sumZ += z;
-                        count++;
-                    }
-                }
-            }
-        }
-
-        return new double[]{(double) sumX / count, (double) sumY / count, (double) sumZ / count};
     }
 
     private boolean hasClearPathToBoundary(int x, int y, int z, String direction) {
@@ -456,34 +452,26 @@ public class Polycube {
                 .boxed()
                 .collect(Collectors.toSet());
 
-        boolean equalHashSet = hashes.equals(otherHashes);
-
-        if(!equalHashSet) {
+        if (!hashes.equals(otherHashes)) {
             return false;
         }
 
-        boolean equalBenNumbers = Arrays.equals(getBensNumbers(), other.getBensNumbers());
-
-        if(!equalBenNumbers) {
+        if (!Arrays.equals(getBensNumbers(), other.getBensNumbers())) {
             return false;
         }
 
-        if (debugMode && !PolycubeComparator.trueEquals(this, other)) {
-            System.out.println("FOUND TWO CUBES WITH SAME HASHS BUT DIFFERENT");
-            System.out.println("CUBE 1: ");
+        if (DEBUG_MODE && !PolycubeComparator.trueEquals(this, other)) {
+            System.out.println("\n~~~Two different cubes that passed all equality checks found~~~");
+            System.out.println("Cube 1: ");
             System.out.println(this);
             this.printMetrics();
-            System.out.println("\nCUBE 2: ");
+            System.out.println("\nCube 2: ");
             System.out.println(other);
             other.printMetrics();
             return false;
         }
 
         return true;
-    }
-
-    public Cube[][][] getGrid() {
-        return this.grid;
     }
 
     @Override
@@ -496,7 +484,7 @@ public class Polycube {
             for (Cube[][] cubes : grid) {
                 for (int x = 0; x < grid[0].length; x++) {
                     if (cubes[x][z] != null) {
-                        sb.append("[#]");
+                        sb.append("[" + cubes[x][z].getNeighborCount() + "]");
                     } else {
                         sb.append("[ ]");
                     }
@@ -512,16 +500,7 @@ public class Polycube {
         System.out.println("Volume: " + volume);
         System.out.println("Bounding box: [" + this.grid.length + ", " + this.grid[0].length + ", " + this.grid[0][0].length + "]");
         System.out.println("HashCode: " + this.hashCode());
-        System.out.println("Ben's number: " + Arrays.toString(getBensNumbers()));
-        System.out.println("Center mass: " + Arrays.toString(this.getCenter()));
-        System.out.println("Cube Hashes: ");
-        Arrays.stream(grid)
-                .flatMap(Arrays::stream)
-                .flatMap(Arrays::stream)
-                .filter(Objects::nonNull)
-                .mapToInt(Cube::hashCode)
-                .sorted()
-                .forEach(System.out::println);
+        System.out.println("Ben's numbers: " + Arrays.toString(getBensNumbers()));
     }
 
     private int[] getBensNumbers() {
