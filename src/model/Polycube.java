@@ -6,7 +6,7 @@ public class Polycube {
 
     private static final boolean DEBUG_MODE = false;
     private static final boolean PERFECT_MODE = false;
-    private static final int DECIMAL_ACCURACY = 16;
+    private static final int DECIMAL_ACCURACY = 12;
     private static final double SCALE = Math.pow(10, DECIMAL_ACCURACY);
     private static final int[][] DIRECTIONS = {
             {0, 1, 0},  // up
@@ -84,23 +84,7 @@ public class Polycube {
         int ySize = grid[0].length;
         int zSize = grid[0][0].length;
 
-        int neighborCount = 0;
-        for (int[] dir : DIRECTIONS) {
-            int x = coordinate.x() + dir[0];
-            int y = coordinate.y() + dir[1];
-            int z = coordinate.z() + dir[2];
-
-            if (x < 0 || x >= xSize || y < 0 || y >= ySize || z < 0 || z >= zSize) {
-                continue;
-            }
-
-            if (grid[x][y][z] != null) {
-                neighborCount += 1;
-                grid[x][y][z].incrementNeighborCount();
-            }
-        }
-
-        this.grid[coordinate.x()][coordinate.y()][coordinate.z()] = new Cube(neighborCount);
+        this.grid[coordinate.x()][coordinate.y()][coordinate.z()] = new Cube();
 
         for (int x = 0; x < xSize; x++) {
             for (int y = 0; y < ySize; y++) {
@@ -115,11 +99,12 @@ public class Polycube {
                         int dy = Math.abs(coordinate.y() - y);
                         int dz = Math.abs(coordinate.z() - z);
 
-                        double distance = Math.sqrt((dx * dx) + (dy * dy) + (dz * dz));
-                        distance = Math.round(distance * SCALE) / SCALE;
+                        int manhattanDistance = dx + dy + dz;
+                        double euclideanDistance = Math.sqrt((dx * dx) + (dy * dy) + (dz * dz));
+                        euclideanDistance = Math.round(euclideanDistance * SCALE) / SCALE;
 
-                        grid[x][y][z].addToDistances(distance);
-                        grid[coordinate.x()][coordinate.y()][coordinate.z()].addToDistances(distance);
+                        grid[x][y][z].addDistances(euclideanDistance, manhattanDistance);
+                        grid[coordinate.x()][coordinate.y()][coordinate.z()].addDistances(euclideanDistance, manhattanDistance);
                     }
                 }
             }
@@ -219,6 +204,97 @@ public class Polycube {
         }
 
         this.grid = shrunkGrid;
+    }
+
+    @Override
+    public int hashCode() {
+        int hashCount = 0;
+
+        for (Cube[][] layer : grid) {
+            for (Cube[] row : layer) {
+                for (Cube cell : row) {
+                    if (cell != null) {
+                        hashCount += cell.hashCode();
+                    }
+                }
+            }
+        }
+
+        return hashCount;
+    }
+
+    //as a reminder to future ben, this equals method only ever runs if the hashes of the two objects are the same, so dont recheck that
+    @Override
+    public boolean equals(Object obj) {
+        if (!(obj instanceof Polycube other)) {
+            return false;
+        }
+
+        if (!Arrays.equals(getBensNumbers(), other.getBensNumbers())) {
+            return false;
+        }
+
+        if (PERFECT_MODE && !PolycubeComparator.trueEquals(this, other)) {
+            if(DEBUG_MODE) {
+                System.out.println("\n~~~Two different cubes that passed all equality checks found~~~");
+                System.out.println("Cube 1: ");
+                System.out.println(this);
+                this.printMetrics();
+                System.out.println("\nCube 2: ");
+                System.out.println(other);
+                other.printMetrics();
+            }
+            return false;
+        }
+
+        return true;
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+
+        for (int z = 0; z < grid[0][0].length; z++) {
+            sb.append("Layer ").append(z).append(":\n");
+
+            for (Cube[][] cubes : grid) {
+                for (int x = 0; x < grid[0].length; x++) {
+                    if (cubes[x][z] != null) {
+                        sb.append("[").append("#").append("]");
+                    } else {
+                        sb.append("[ ]");
+                    }
+                }
+                sb.append("\n");
+            }
+            sb.append("\n");
+        }
+        return sb.toString();
+    }
+
+    public void printMetrics() {
+        System.out.println("Volume: " + volume);
+        System.out.println("Bounding box: [" + this.grid.length + ", " + this.grid[0].length + ", " + this.grid[0][0].length + "]");
+        System.out.println("HashCode: " + this.hashCode());
+        System.out.println("Ben's numbers: " + Arrays.toString(getBensNumbers()));
+    }
+
+    //Called Bens numbers because I could not find a good name for this metric.
+    //this finds how many visible faces there are when viewed from each of the 6 directions
+    //BUT - it only considers faces that are on the layer that is furthest from the viewing side that that contains a visible face.
+    //Hard to explain but spin a real polycube around in your hand and look at it from any 90 degree angle. Bens number is the count of visible faces from the layer furthest from your face that still have a visible face.
+    private int[] getBensNumbers() {
+        //TODO make these methods return a hashmap which is a collection of how many faces can see the boundry at each layer. add all that up into one master hashmap using putAll, then hash that to get Bens Hash!
+        int[] counts = new int[6];
+        counts[0] = getNumberFromLowX();
+        counts[1] = getNumberFromHighX();
+        counts[2] = getNumberFromLowY();
+        counts[3] = getNumberFromHighY();
+        counts[4] = getNumberFromLowZ();
+        counts[5] = getNumberFromHighZ();
+
+        Arrays.sort(counts);
+        return counts;
     }
 
     private boolean hasClearPathToBoundary(int x, int y, int z, String direction) {
@@ -411,96 +487,5 @@ public class Polycube {
         }
 
         return 0;
-    }
-
-    @Override
-    public int hashCode() {
-        int hashCount = 0;
-
-        for (Cube[][] layer : grid) {
-            for (Cube[] row : layer) {
-                for (Cube cell : row) {
-                    if (cell != null) {
-                        hashCount += cell.hashCode();
-                    }
-                }
-            }
-        }
-
-        return hashCount;
-    }
-
-    //as a reminder to future ben, this equals method only ever runs if the hashes of the two objects are the same, so dont recheck that
-    @Override
-    public boolean equals(Object obj) {
-        if (!(obj instanceof Polycube other)) {
-            return false;
-        }
-
-        if (!Arrays.equals(getBensNumbers(), other.getBensNumbers())) {
-            return false;
-        }
-
-        if (PERFECT_MODE && !PolycubeComparator.trueEquals(this, other)) {
-            if(DEBUG_MODE) {
-                System.out.println("\n~~~Two different cubes that passed all equality checks found~~~");
-                System.out.println("Cube 1: ");
-                System.out.println(this);
-                this.printMetrics();
-                System.out.println("\nCube 2: ");
-                System.out.println(other);
-                other.printMetrics();
-            }
-            return false;
-        }
-
-        return true;
-    }
-
-    @Override
-    public String toString() {
-        StringBuilder sb = new StringBuilder();
-
-        for (int z = 0; z < grid[0][0].length; z++) {
-            sb.append("Layer ").append(z).append(":\n");
-
-            for (Cube[][] cubes : grid) {
-                for (int x = 0; x < grid[0].length; x++) {
-                    if (cubes[x][z] != null) {
-                        sb.append("[").append(cubes[x][z].getNeighborCount()).append("]");
-                    } else {
-                        sb.append("[ ]");
-                    }
-                }
-                sb.append("\n");
-            }
-            sb.append("\n");
-        }
-        return sb.toString();
-    }
-
-    public void printMetrics() {
-        System.out.println("Volume: " + volume);
-        System.out.println("Bounding box: [" + this.grid.length + ", " + this.grid[0].length + ", " + this.grid[0][0].length + "]");
-        System.out.println("HashCode: " + this.hashCode());
-        System.out.println("Ben's numbers: " + Arrays.toString(getBensNumbers()));
-    }
-
-    //Called Bens numbers because I could not find a good name for this metric.
-    //this finds how many visible faces there are when viewed from each of the 6 directions
-    //BUT - it only considers faces that are on the layer that is furthest from the viewing side that that contains a visible face.
-    //Hard to explain but spin a real polycube around in your hand and look at it from any 90 degree angle. Bens number is the count of visible faces from the layer furthest from your face that still have a visible face.
-    private int[] getBensNumbers() {
-        //TODO make these methods return a hashmap which is a collection of how many faces can see the boundry at each layer. add all that up into one master hashmap using putAll, then hash that to get Bens Hash!
-        int[] counts = new int[6];
-        counts[0] = getNumberFromLowX();
-        counts[1] = getNumberFromHighX();
-        counts[2] = getNumberFromLowY();
-        counts[3] = getNumberFromHighY();
-        counts[4] = getNumberFromLowZ();
-        counts[5] = getNumberFromHighZ();
-
-        Arrays.sort(counts);
-        return counts;
     }
 }

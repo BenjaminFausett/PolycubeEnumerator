@@ -3,33 +3,38 @@ package model;
 public class Cube implements Comparable<Cube> {
 
     private int hashCode;
-    private int neighborCount;
 
-    public Cube(int neighborCount) {
+    private int euclideanDistancesSum;
+    private int manhattanDistancesSum;
+
+    public Cube() {
         this.hashCode = 0;
-        this.neighborCount = neighborCount;
+        this.euclideanDistancesSum = 0;
+        this.manhattanDistancesSum = 0;
     }
 
     public Cube(Cube cube) {
         this.hashCode = cube.hashCode;
-        this.neighborCount = cube.neighborCount;
+        this.euclideanDistancesSum = cube.euclideanDistancesSum;
+        this.manhattanDistancesSum = cube.manhattanDistancesSum;
     }
 
     public Cube clone() {
         return new Cube(this);
     }
 
-    public void addToDistances(double distance) {
-        this.hashCode += Double.hashCode(distance);
-    }
-
-    public void incrementNeighborCount() {
-        this.neighborCount += 1;
+    public void addDistances(double euclideanDistance, int manhattanDistance) {
+        this.hashCode = 0;
+        euclideanDistancesSum += Double.hashCode(euclideanDistance);
+        manhattanDistancesSum += manhattanDistance;
     }
 
     @Override
     public int hashCode() {
-        return (this.hashCode + String.valueOf(neighborCount)).hashCode();
+        if (this.hashCode == 0) {
+            this.hashCode = (String.valueOf(manhattanDistancesSum) + euclideanDistancesSum).hashCode();
+        }
+        return this.hashCode;
     }
 
     @Override
@@ -43,9 +48,5 @@ public class Cube implements Comparable<Cube> {
     @Override
     public int compareTo(Cube other) {
         return this.hashCode() - other.hashCode();
-    }
-
-    public int getNeighborCount() {
-        return this.neighborCount;
     }
 }

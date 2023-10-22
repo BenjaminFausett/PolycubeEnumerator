@@ -8,29 +8,34 @@ public class PolycubeComparator {
     public static boolean trueEquals(final Polycube polycube1, final Polycube polycube2) {
 
         Cube[][][] grid1 = polycube1.clone().getGrid();
-        Cube[][][] reflectedGrid1 = reflectAcrossX(grid1);
+        Cube[][][] reflectedGrid1 = reflectAcrossX(polycube1.clone().getGrid());
 
+        // Check the original and reflected orientation first
         if (compareGrids(grid1, polycube2.getGrid()) || compareGrids(reflectedGrid1, polycube2.getGrid())) {
             return true;
         }
 
-        for (int i = 0; i < 4; i++) {
-            Cube[][][] rotatedXGrid1 = rotateX(grid1, i);
-            Cube[][][] rotatedXReflectedGrid1 = rotateX(reflectedGrid1, i);
+        for (int x = 0; x < 2; x++) { // Rotate about X-axis (original and one more rotation)
+            for (int z = 0; z < 4; z++) { // Rotate about Z-axis
+                grid1 = rotateZ(grid1);
+                reflectedGrid1 = rotateZ(reflectedGrid1);
 
-            for (int j = 0; j < 4; j++) {
-                Cube[][][] rotatedYGrid1 = rotateY(rotatedXGrid1, j);
-                Cube[][][] rotatedYReflectedGrid1 = rotateY(rotatedXReflectedGrid1, j);
+                if (compareGrids(grid1, polycube2.getGrid()) || compareGrids(reflectedGrid1, polycube2.getGrid())) {
+                    return true;
+                }
 
-                for (int k = 0; k < 4; k++) {
-                    Cube[][][] rotatedZGrid1 = rotateZ(rotatedYGrid1, k);
-                    Cube[][][] rotatedZReflectedGrid1 = rotateZ(rotatedYReflectedGrid1, k);
-
-                    if (compareGrids(rotatedZGrid1, polycube2.getGrid()) || compareGrids(rotatedZReflectedGrid1, polycube2.getGrid())) {
+                for (int y = 0; y < 4; y++) { // Rotate about Y-axis
+                    if (compareGrids(grid1, polycube2.getGrid()) || compareGrids(reflectedGrid1, polycube2.getGrid())) {
                         return true;
                     }
+
+                    grid1 = rotateY(grid1);
+                    reflectedGrid1 = rotateY(reflectedGrid1);
                 }
             }
+            // After completing all Z and Y rotations for the current X orientation, rotate about X-axis
+            grid1 = rotateX(grid1);
+            reflectedGrid1 = rotateX(reflectedGrid1);
         }
         return false;
     }
@@ -55,51 +60,46 @@ public class PolycubeComparator {
         return true;
     }
 
-    private static Cube[][][] rotateX(Cube[][][] grid, int times) {
-        for (int t = 0; t < times; t++) {
-            int depth = grid.length, height = grid[0].length, width = grid[0][0].length;
-            Cube[][][] newGrid = new Cube[depth][width][height];
-            for (int x = 0; x < depth; x++) {
-                for (int y = 0; y < height; y++) {
-                    for (int z = 0; z < width; z++) {
-                        newGrid[x][z][height - 1 - y] = grid[x][y][z];
-                    }
+    private static Cube[][][] rotateX(Cube[][][] grid) {
+        int depth = grid.length, height = grid[0].length, width = grid[0][0].length;
+        Cube[][][] newGrid = new Cube[depth][width][height];
+        for (int x = 0; x < depth; x++) {
+            for (int y = 0; y < height; y++) {
+                for (int z = 0; z < width; z++) {
+                    newGrid[x][z][height - 1 - y] = grid[x][y][z];
                 }
             }
-            grid = newGrid;
         }
+        grid = newGrid;
+
         return grid;
     }
 
-    private static Cube[][][] rotateY(Cube[][][] grid, int times) {
-        for (int t = 0; t < times; t++) {
-            int depth = grid.length, height = grid[0].length, width = grid[0][0].length;
-            Cube[][][] newGrid = new Cube[width][height][depth];
-            for (int x = 0; x < depth; x++) {
-                for (int y = 0; y < height; y++) {
-                    for (int z = 0; z < width; z++) {
-                        newGrid[z][y][depth - 1 - x] = grid[x][y][z];
-                    }
+    private static Cube[][][] rotateY(Cube[][][] grid) {
+        int depth = grid.length, height = grid[0].length, width = grid[0][0].length;
+        Cube[][][] newGrid = new Cube[width][height][depth];
+        for (int x = 0; x < depth; x++) {
+            for (int y = 0; y < height; y++) {
+                for (int z = 0; z < width; z++) {
+                    newGrid[z][y][depth - 1 - x] = grid[x][y][z];
                 }
             }
-            grid = newGrid;
         }
+        grid = newGrid;
+
         return grid;
     }
 
-    private static Cube[][][] rotateZ(Cube[][][] grid, int times) {
-        for (int t = 0; t < times; t++) {
-            int depth = grid.length, height = grid[0].length, width = grid[0][0].length;
-            Cube[][][] newGrid = new Cube[height][depth][width];
-            for (int x = 0; x < depth; x++) {
-                for (int y = 0; y < height; y++) {
-                    for (int z = 0; z < width; z++) {
-                        newGrid[y][depth - 1 - x][z] = grid[x][y][z];
-                    }
-                }
+    private static Cube[][][] rotateZ(Cube[][][] grid) {
+        int depth = grid.length, height = grid[0].length, width = grid[0][0].length;
+        Cube[][][] newGrid = new Cube[height][depth][width];
+        for (int x = 0; x < depth; x++) {
+            for (int y = 0; y < height; y++) {
+                System.arraycopy(grid[x][y], 0, newGrid[y][depth - 1 - x], 0, width);
             }
-            grid = newGrid;
         }
+        grid = newGrid;
+
         return grid;
     }
 
