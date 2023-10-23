@@ -1,14 +1,17 @@
-package model;
+package repository;
+
+import config.Options;
+import model.Polycube;
 
 import java.io.*;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class PolycubeRepository {
-
-    private int largestCompletedN;
 
     private final HashSet<Polycube> monoCubes;    //1
     private final HashSet<Polycube> diCubes;      //2
@@ -30,6 +33,7 @@ public class PolycubeRepository {
     private final HashSet<Polycube> octadecaCubes;  //18
     private final HashSet<Polycube> nonadecaCubes;  //19
     private final HashSet<Polycube> icosiCubes;     //20
+    private int largestCompletedN;
 
     public PolycubeRepository() throws IOException, ClassNotFoundException {
         monoCubes = new HashSet<>();
@@ -54,6 +58,21 @@ public class PolycubeRepository {
         icosiCubes = new HashSet<>();
 
         this.loadBackup();
+    }
+
+    public static void printBackupFileSizes() throws Exception {
+        int n = 1;
+        while (Files.exists(Paths.get(n + "_cubes.ser")) && n > 0) {
+            FileInputStream fileIn = new FileInputStream(n + "_cubes.ser");
+            ObjectInputStream in = new ObjectInputStream(fileIn);
+            List<Polycube> polycubes = (List<Polycube>) in.readObject();
+
+            System.out.printf("%-5s %d%n", n, polycubes.size());
+
+            in.close();
+            fileIn.close();
+            n++;
+        }
     }
 
     public synchronized void add(Polycube polycube) {
@@ -147,67 +166,67 @@ public class PolycubeRepository {
         return false;
     }
 
-    public List<Polycube> getPolycubes(int n) {
+    public Set<Polycube> getPolycubes(int n) {
         switch (n) {
             case 1 -> {
-                return monoCubes.stream().map(Polycube::clone).toList();
+                return monoCubes;
             }
             case 2 -> {
-                return diCubes.stream().map(Polycube::clone).toList();
+                return diCubes;
             }
             case 3 -> {
-                return triCubes.stream().map(Polycube::clone).toList();
+                return triCubes;
             }
             case 4 -> {
-                return tetraCubes.stream().map(Polycube::clone).toList();
+                return tetraCubes;
             }
             case 5 -> {
-                return pentaCubes.stream().map(Polycube::clone).toList();
+                return pentaCubes;
             }
             case 6 -> {
-                return hexaCubes.stream().map(Polycube::clone).toList();
+                return hexaCubes;
             }
             case 7 -> {
-                return heptaCubes.stream().map(Polycube::clone).toList();
+                return heptaCubes;
             }
             case 8 -> {
-                return octaCubes.stream().map(Polycube::clone).toList();
+                return octaCubes;
             }
             case 9 -> {
-                return nonaCubes.stream().map(Polycube::clone).toList();
+                return nonaCubes;
             }
             case 10 -> {
-                return decaCubes.stream().map(Polycube::clone).toList();
+                return decaCubes;
             }
             case 11 -> {
-                return undecaCubes.stream().map(Polycube::clone).toList();
+                return undecaCubes;
             }
             case 12 -> {
-                return dodecaCubes.stream().map(Polycube::clone).toList();
+                return dodecaCubes;
             }
             case 13 -> {
-                return tridecaCubes.stream().map(Polycube::clone).toList();
+                return tridecaCubes;
             }
             case 14 -> {
-                return tetradecaCubes.stream().map(Polycube::clone).toList();
+                return tetradecaCubes;
             }
             case 15 -> {
-                return pentadecaCubes.stream().map(Polycube::clone).toList();
+                return pentadecaCubes;
             }
             case 16 -> {
-                return hexadecaCubes.stream().map(Polycube::clone).toList();
+                return hexadecaCubes;
             }
             case 17 -> {
-                return heptadecaCubes.stream().map(Polycube::clone).toList();
+                return heptadecaCubes;
             }
             case 18 -> {
-                return octadecaCubes.stream().map(Polycube::clone).toList();
+                return octadecaCubes;
             }
             case 19 -> {
-                return nonadecaCubes.stream().map(Polycube::clone).toList();
+                return nonadecaCubes;
             }
             case 20 -> {
-                return icosiCubes.stream().map(Polycube::clone).toList();
+                return icosiCubes;
             }
         }
         return null;
@@ -285,34 +304,45 @@ public class PolycubeRepository {
     }
 
     public void backupPolyCubes(int n) throws IOException {
-        String filename = n + "_cubes.ser";
-        FileOutputStream fileOut = new FileOutputStream(filename);
-        ObjectOutputStream out = new ObjectOutputStream(fileOut);
-        out.writeObject(this.getPolycubes(n));
-        fileOut.close();
-        out.close();
+        if (!Options.ROTATIONS_ON) {
+            return;
+        }
+        System.out.println("Started saving cache of cube size n = " + n);
+
+        String filename = "polycube cache/cubes" + n + ".ser";
+
+
+        if(Files.notExists(Path.of(filename))) {
+            FileOutputStream fileOut = new FileOutputStream(filename);
+            ObjectOutputStream out = new ObjectOutputStream(fileOut);
+            out.writeObject(this.getPolycubes(n));
+            fileOut.close();
+            out.close();
+        }
+
+        System.out.println("Finished saving cache of cube size n = " + n);
     }
 
     private void loadBackup() throws IOException, ClassNotFoundException {
         int n = 20;
-        while(Files.notExists(Paths.get(n + "_cubes.ser")) && n > 0) {
+        while (Files.notExists(Paths.get("polycube cache/cubes" + n + ".ser")) && n > 0) {
             n--;
         }
 
-        if(n == 0) {//no backup so starting from 1. ill be a pal and generate all the cubes for n = 1 for you
+        if (n == 0 && !Options.USE_CACHE) {//no backup so starting from 1. ill be a pal and generate all the cubes for n = 1 for you
             Polycube monoCube = new Polycube();
             monoCubes.add(monoCube);
             largestCompletedN = 1;
             return;
         }
-        System.out.println("Found backup file of size n = " + n);
+        System.out.println("Found cache of cube size n = " + n);
 
         this.largestCompletedN = n;
 
         try {
-            FileInputStream fileIn = new FileInputStream(n + "_cubes.ser");
+            FileInputStream fileIn = new FileInputStream("polycube cache/cubes" + n + ".ser");
             ObjectInputStream in = new ObjectInputStream(fileIn);
-            List<Polycube> polycubes = (List<Polycube>) in.readObject();
+            Set<Polycube> polycubes = (Set<Polycube>) in.readObject();
 
             in.close();
             fileIn.close();
@@ -339,6 +369,7 @@ public class PolycubeRepository {
                 case 19 -> nonadecaCubes.addAll(polycubes);
                 case 20 -> icosiCubes.addAll(polycubes);
             }
+            System.out.println("Loaded cache of cube size n = " + n);
         } catch (IOException | ClassNotFoundException e) {
             throw e;
         }
@@ -366,21 +397,6 @@ public class PolycubeRepository {
             case 18 -> octadecaCubes.clear();
             case 19 -> nonadecaCubes.clear();
             case 20 -> icosiCubes.clear();
-        }
-    }
-
-    public static void printBackupFileSizes() throws Exception {
-        int n = 1;
-        while(Files.exists(Paths.get(n + "_cubes.ser")) && n > 0) {
-            FileInputStream fileIn = new FileInputStream(n + "_cubes.ser");
-            ObjectInputStream in = new ObjectInputStream(fileIn);
-            List<Polycube> polycubes = (List<Polycube>) in.readObject();
-
-            System.out.printf("%-5s %d%n", n, polycubes.size());
-
-            in.close();
-            fileIn.close();
-            n++;
         }
     }
 }

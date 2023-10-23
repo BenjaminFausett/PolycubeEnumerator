@@ -1,34 +1,37 @@
 package model;
 
+
+import model.records.Point;
+
 import java.io.Serializable;
 
 public class Cube implements Comparable<Cube>, Serializable {
 
-    private int hashCode;
-
+    private final Point point;
     private int euclideanDistancesSum;
     private int manhattanDistancesSum;
+    private int hashCode;
 
-    public Cube() {
-        this.hashCode = 0;
+    public Cube(int x, int y, int z) {
+        this.point = new Point(x, y, z);
         this.euclideanDistancesSum = 0;
         this.manhattanDistancesSum = 0;
+        this.hashCode = 0;
+    }
+
+    public Cube(Point point) {
+        this(point.x(), point.y(), point.z());
     }
 
     public Cube(Cube cube) {
-        this.hashCode = cube.hashCode;
+        this.point = new Point(cube.point.x(), cube.point.y(), cube.point.z());
         this.euclideanDistancesSum = cube.euclideanDistancesSum;
         this.manhattanDistancesSum = cube.manhattanDistancesSum;
+        this.hashCode = cube.hashCode;
     }
 
     public Cube clone() {
         return new Cube(this);
-    }
-
-    public void addDistances(double euclideanDistance, int manhattanDistance) {
-        this.hashCode = 0;
-        euclideanDistancesSum += Double.hashCode(euclideanDistance);
-        manhattanDistancesSum += manhattanDistance;
     }
 
     @Override
@@ -39,16 +42,34 @@ public class Cube implements Comparable<Cube>, Serializable {
         return this.hashCode;
     }
 
-    @Override
-    public boolean equals(Object obj) {
-        if (!(obj instanceof Cube other)) {
-            return false;
-        }
-        return euclideanDistancesSum == other.euclideanDistancesSum && manhattanDistancesSum == other.manhattanDistancesSum;
+    public void addManhattanDistance(int distance) {
+        this.hashCode = 0;
+        this.manhattanDistancesSum += distance;
+    }
+
+    public void addEuclideanDistancesSum(int distance) {
+        this.hashCode = 0;
+        this.euclideanDistancesSum += distance;
+    }
+
+    public Point getPoint() {
+        return point;
     }
 
     @Override
     public int compareTo(Cube other) {
         return this.hashCode() - other.hashCode();
+    }
+
+    @Override
+    public String toString() {
+        String cube = "";
+
+        cube += "Point: " + point.toString();
+        cube += "\nManhattan Sum: " + this.manhattanDistancesSum;
+        cube += "\nEuclidean Sum: " + this.euclideanDistancesSum;
+        cube += "\nHashcode: " + this.hashCode;
+
+        return cube;
     }
 }
