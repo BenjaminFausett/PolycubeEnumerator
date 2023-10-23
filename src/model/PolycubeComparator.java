@@ -5,7 +5,7 @@ package model;
  */
 public class PolycubeComparator {
 
-    public static boolean trueEquals(final Polycube polycube1, final Polycube polycube2) {
+    public static boolean trueEquals(final Polycube2 polycube1, final Polycube2 polycube2) {
 
         Cube[][][] grid1 = polycube1.clone().getGrid();
         Cube[][][] reflectedGrid1 = reflectAcrossX(polycube1.clone().getGrid());

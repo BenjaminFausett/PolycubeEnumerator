@@ -76,6 +76,7 @@ public class LinkedCube implements Comparable<Cube>, Serializable  {
 
         LinkedCube newNode = new LinkedCube(node);
         visited.put(node, newNode);
+        clonedNodes.add(newNode);
 
         // Recursively clone neighbors.
         newNode.positiveX = recursiveClone(node.positiveX, visited, clonedNodes);
@@ -97,10 +98,12 @@ public class LinkedCube implements Comparable<Cube>, Serializable  {
     }
 
     public void addManhattanDistance(int distance) {
+        this.hashCode = 0;
         this.manhattanDistancesSum += distance;
     }
 
     public void addEuclideanDistancesSum(int distance) {
+        this.hashCode = 0;
         this.euclideanDistancesSum += distance;
     }
 
@@ -161,5 +164,17 @@ public class LinkedCube implements Comparable<Cube>, Serializable  {
     @Override
     public int compareTo(Cube other) {
         return this.hashCode() - other.hashCode();
+    }
+
+    @Override
+    public String toString() {
+        String cube = "";
+
+        cube += "Point: " + point.toString();
+        cube += "\nEuclidean Sum: " + this.euclideanDistancesSum;
+        cube += "\nManhattan Sum: " + this.manhattanDistancesSum;
+        cube += "\nHashcode: " + this.hashCode;
+
+        return cube;
     }
 }

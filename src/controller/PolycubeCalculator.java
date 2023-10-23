@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
+import java.util.Set;
 
 public class PolycubeCalculator {
 
@@ -29,11 +30,12 @@ public class PolycubeCalculator {
                 System.out.printf("%-5s %d%n", i, polycubes.size());
 
                 polycubes.parallelStream().forEach(polycube -> {
-                    List<Point> points = polycube.getValidNewCubePlacements();
+                    Set<Point> points = polycube.getValidNewCubePoint();
                     points.parallelStream().forEach(point -> {
                         Polycube candidateCube = new Polycube(polycube, point);
                         if (!polycubeRepository.exists(candidateCube)) {
                             polycubeRepository.add(candidateCube);
+                            //System.out.println(candidateCube);
                         }
                     });
                 });

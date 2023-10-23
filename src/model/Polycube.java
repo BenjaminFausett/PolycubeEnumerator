@@ -1,9 +1,9 @@
 package model;
 
-import java.io.Serializable;
 import java.util.*;
+import java.util.stream.Collectors;
 
-public class Polycube implements Serializable {
+public class Polycube {
 
     private static final boolean DEBUG_MODE = false;
     private static final boolean PERFECT_MODE = false;
@@ -18,250 +18,211 @@ public class Polycube implements Serializable {
             {0, 0, -1}  // backward
     };
 
-    private Cube[][][] grid;
     private int volume;
+    private List<LinkedCube> cubes;
 
 
     //Creates the one and only perfect MonoCube
     public Polycube() {
-        this.grid = new Cube[1][1][1];
-        this.volume = 0;
-        this.addCube(new Point(0, 0, 0));
+        this.cubes = new ArrayList<>();
+        this.cubes.add(new LinkedCube(100, 100, 100));
+        this.volume = 1;
+    }
+
+    private Polycube(Polycube polycube) {
+        this.volume = polycube.volume;
+        this.cubes = polycube.cubes.get(0).cloneStructure();
+
     }
 
     public Polycube(Polycube polycube, Point newCubePoint) {
         this(polycube);
         this.addCube(newCubePoint);
-        this.shrinkGrid();
-    }
-
-    private Polycube(Polycube polycube) {
-        int xLength = polycube.grid.length;
-        Cube[][][] copy = new Cube[xLength][][];
-
-        for (int x = 0; x < xLength; x++) {
-            if (polycube.grid[x] == null) {
-                continue;
-            }
-
-            int yLength = polycube.grid[x].length;
-            copy[x] = new Cube[yLength][];
-
-            for (int y = 0; y < yLength; y++) {
-                if (polycube.grid[x][y] == null) {
-                    continue;
-                }
-
-                int zLength = polycube.grid[x][y].length;
-                copy[x][y] = new Cube[zLength];
-
-                for (int z = 0; z < zLength; z++) {
-                    if (polycube.grid[x][y][z] != null) {
-                        copy[x][y][z] = polycube.grid[x][y][z].clone();
-                    }
-                }
-            }
-        }
-
-        this.grid = copy;
-        this.volume = polycube.volume;
     }
 
     public Polycube clone() {
         return new Polycube(this);
     }
 
-    public int getVolume() {
-        return this.volume;
-    }
-
-    public Cube[][][] getGrid() {
-        return this.grid;
-    }
-
     public void addCube(Point point) {
         this.volume += 1;
 
-        int xSize = grid.length;
-        int ySize = grid[0].length;
-        int zSize = grid[0][0].length;
+        LinkedCube newCube = new LinkedCube(point);
 
-        this.grid[point.x()][point.y()][point.z()] = new Cube();
+        for (LinkedCube cube : cubes) {
+            int dx = Math.abs(cube.getPoint().x() - newCube.getPoint().x());
+            int dy = Math.abs(cube.getPoint().y() - newCube.getPoint().y());
+            int dz = Math.abs(cube.getPoint().z() - newCube.getPoint().z());
 
-        for (int x = 0; x < xSize; x++) {
-            for (int y = 0; y < ySize; y++) {
-                for (int z = 0; z < zSize; z++) {
-                    if (grid[x][y][z] != null) {
-
-                        if (x == point.x() && y == point.y() && z == point.z()) {
-                            continue;
-                        }
-
-                        int dx = Math.abs(point.x() - x);
-                        int dy = Math.abs(point.y() - y);
-                        int dz = Math.abs(point.z() - z);
-
-                        int manhattanDistance = dx + dy + dz;
-                        double euclideanDistance = Math.sqrt((dx * dx) + (dy * dy) + (dz * dz));
-                        euclideanDistance = Math.round(euclideanDistance * SCALE) / SCALE;
-
-                        grid[x][y][z].addDistances(euclideanDistance, manhattanDistance);
-                        grid[point.x()][point.y()][point.z()].addDistances(euclideanDistance, manhattanDistance);
-                    }
+            if (dx == 1 && dy == 0 && dz == 0) {
+                if (newCube.getPoint().x() > cube.getPoint().x()) {
+                    newCube.setNegativeX(cube);
+                    cube.setPositiveX(newCube);
+                } else {
+                    cube.setNegativeX(newCube);
+                    newCube.setPositiveX(cube);
                 }
             }
+            if (dx == 0 && dy == 1 && dz == 0) {
+                if (newCube.getPoint().y() > cube.getPoint().y()) {
+                    newCube.setNegativeY(cube);
+                    cube.setPositiveY(newCube);
+                } else {
+                    cube.setNegativeY(newCube);
+                    newCube.setPositiveY(cube);
+                }
+            }
+            if (dx == 0 && dy == 0 && dz == 1) {
+                if (newCube.getPoint().z() > cube.getPoint().z()) {
+                    newCube.setNegativeZ(cube);
+                    cube.setPositiveZ(newCube);
+                } else {
+                    cube.setNegativeZ(newCube);
+                    newCube.setPositiveZ(cube);
+                }
+            }
+
+            int manhattanDistance = dx + dy + dz;
+            double euclideanDistance = Math.sqrt((dx * dx) + (dy * dy) + (dz * dz));
+            int euclideanDistanceHash = Double.hashCode(Math.round(euclideanDistance * SCALE) / SCALE);
+
+            newCube.addManhattanDistance(manhattanDistance);
+            newCube.addEuclideanDistancesSum(euclideanDistanceHash);
+
+            cube.addManhattanDistance(manhattanDistance);
+            cube.addEuclideanDistancesSum(euclideanDistanceHash);
         }
+
+        this.cubes.add(newCube);
     }
 
-    public List<Point> getValidNewCubePlacements() {
-        this.addBuffer();
-        List<Point> validPlacements = new ArrayList<>();
-        int xSize = grid.length;
-        int ySize = grid[0].length;
-        int zSize = grid[0][0].length;
 
-        for (int x = 0; x < xSize; x++) {
-            for (int y = 0; y < ySize; y++) {
-                for (int z = 0; z < zSize; z++) {
-                    if (this.grid[x][y][z] != null) continue;
+    private List<LinkedCube> getNeighbors(Point point) {
+        List<LinkedCube> neighbors = new ArrayList<>();
+        for (LinkedCube cube : cubes) {
+            int dx = Math.abs(cube.getPoint().x() - point.x());
+            int dy = Math.abs(cube.getPoint().x() - point.x());
+            int dz = Math.abs(cube.getPoint().x() - point.x());
 
-                    for (int[] dir : DIRECTIONS) {
-                        int xOffset = x + dir[0];
-                        int yOffset = y + dir[1];
-                        int zOffset = z + dir[2];
-
-                        if (xOffset < 0 || xOffset >= xSize || yOffset < 0 || yOffset >= ySize || zOffset < 0 || zOffset >= zSize) {
-                            continue;
-                        }
-                        if (this.grid[xOffset][yOffset][zOffset] != null) {
-                            validPlacements.add(new Point(x, y, z));
-                        }
-                    }
-                }
+            if (dx == 1 && dy == 1 && dz == 1) {
+                neighbors.add(cube);
             }
         }
+        return neighbors;
+    }
+
+    public Set<Point> getValidNewCubePoint() {
+        Set<Point> validPlacements = new HashSet<>();
+
+        cubes.forEach(cube -> {
+            if(cube.getNegativeX() == null) validPlacements.add(new Point(cube.getPoint().x() - 1, cube.getPoint().y(), cube.getPoint().z()));
+            if(cube.getPositiveX() == null) validPlacements.add(new Point(cube.getPoint().x() + 1, cube.getPoint().y(), cube.getPoint().z()));
+
+            if(cube.getNegativeY() == null) validPlacements.add(new Point(cube.getPoint().x(), cube.getPoint().y() - 1, cube.getPoint().z()));
+            if(cube.getPositiveY() == null) validPlacements.add(new Point(cube.getPoint().x(), cube.getPoint().y() + 1, cube.getPoint().z()));
+
+            if(cube.getNegativeZ() == null) validPlacements.add(new Point(cube.getPoint().x(), cube.getPoint().y(), cube.getPoint().z() - 1));
+            if(cube.getPositiveZ() == null) validPlacements.add(new Point(cube.getPoint().x(), cube.getPoint().y(), cube.getPoint().z() + 1));
+        });
 
         return validPlacements;
     }
 
-    private void addBuffer() {
-        int xLength = this.grid.length;
-        int yLength = this.grid[0].length;
-        int zLength = this.grid[0][0].length;
-
-        Cube[][][] bufferedGrid = new Cube[xLength + 2][yLength + 2][zLength + 2];
-
-        for (int x = 0; x < xLength; x++) {
-            for (int y = 0; y < yLength; y++) {
-                for (int z = 0; z < zLength; z++) {
-                    if (this.grid[x][y][z] != null) {
-                        bufferedGrid[x + 1][y + 1][z + 1] = this.grid[x][y][z].clone();
-                    }
-                }
-            }
-        }
-
-        this.grid = bufferedGrid;
+    public int getVolume() {
+        return this.volume;
     }
 
-    private void shrinkGrid() {
-        int xMin = Integer.MAX_VALUE, xMax = Integer.MIN_VALUE;
-        int yMin = Integer.MAX_VALUE, yMax = Integer.MIN_VALUE;
-        int zMin = Integer.MAX_VALUE, zMax = Integer.MIN_VALUE;
-
-        int xLen = grid.length;
-        int yLen = grid[0].length;
-        int zLen = grid[0][0].length;
-
-        for (int x = 0; x < xLen; x++) {
-            for (int y = 0; y < yLen; y++) {
-                for (int z = 0; z < zLen; z++) {
-                    if (grid[x][y][z] != null) {
-                        xMin = Math.min(xMin, x);
-                        xMax = Math.max(xMax, x);
-                        yMin = Math.min(yMin, y);
-                        yMax = Math.max(yMax, y);
-                        zMin = Math.min(zMin, z);
-                        zMax = Math.max(zMax, z);
-                    }
-                }
-            }
-        }
-
-        if (xMin > xMax || yMin > yMax || zMin > zMax) {
-            this.grid = new Cube[0][0][0];
-            return;
-        }
-
-        Cube[][][] shrunkGrid = new Cube[xMax - xMin + 1][yMax - yMin + 1][zMax - zMin + 1];
-
-        for (int x = xMin; x <= xMax; x++) {
-            for (int y = yMin; y <= yMax; y++) {
-                for (int z = zMin; z <= zMax; z++) {
-                    if (grid[x][y][z] != null) {
-                        shrunkGrid[x - xMin][y - yMin][z - zMin] = grid[x][y][z].clone();
-                    }
-                }
-            }
-        }
-
-        this.grid = shrunkGrid;
+    private int getMaxX() {
+        return this.cubes.stream().mapToInt(cube -> cube.getPoint().x()).max().orElse(0);
     }
+
+    private int getMinX() {
+        return this.cubes.stream().mapToInt(cube -> cube.getPoint().x()).min().orElse(0);
+    }
+
+    private int getMaxY() {
+        return this.cubes.stream().mapToInt(cube -> cube.getPoint().y()).max().orElse(0);
+    }
+
+    private int getMinY() {
+        return this.cubes.stream().mapToInt(cube -> cube.getPoint().y()).min().orElse(0);
+    }
+
+    private int getMaxZ() {
+        return this.cubes.stream().mapToInt(cube -> cube.getPoint().z()).max().orElse(0);
+    }
+
+    private int getMinZ() {
+        return this.cubes.stream().mapToInt(cube -> cube.getPoint().z()).min().orElse(0);
+    }
+
+
 
     @Override
     public int hashCode() {
-        int hashCount = 0;
-
-        for (Cube[][] layer : grid) {
-            for (Cube[] row : layer) {
-                for (Cube cell : row) {
-                    if (cell != null) {
-                        hashCount += cell.hashCode();
-                    }
-                }
-            }
-        }
-
-        return hashCount;
+        return cubes.stream().mapToInt(LinkedCube::hashCode).sum();
     }
 
-    //as a reminder to future ben, this equals method only ever runs if the hashes of the two objects are the same, so dont recheck that
     @Override
     public boolean equals(Object obj) {
         if (!(obj instanceof Polycube other)) {
             return false;
         }
 
-        if(!Arrays.equals(this.getBensNumbers(), other.getBensNumbers())) {
-            return false;
-        }
+        Set<Integer> points = cubes.stream().map(LinkedCube::hashCode).collect(Collectors.toSet());
+        Set<Integer> otherPoints = other.cubes.stream().map(LinkedCube::hashCode).collect(Collectors.toSet());
 
-        if (PERFECT_MODE && !PolycubeComparator.trueEquals(this, other)) {
-            if(DEBUG_MODE) {
-                System.out.println("\n~~~Two different cubes that passed all equality checks found~~~");
-                System.out.println("Cube 1: ");
-                System.out.println(this);
-                this.printMetrics();
-                System.out.println("\nCube 2: ");
-                System.out.println(other);
-                other.printMetrics();
-            }
-            return false;
-        }
-
-        return true;
+        return points.equals(otherPoints);
     }
 
     @Override
     public String toString() {
+        int maxX = this.getMaxX();
+        int minX = this.getMinX();
+        int dx = maxX - minX;
+
+        int maxY = this.getMaxY();
+        int minY = this.getMinY();
+        int dy = maxY - minY;
+
+        int maxZ = this.getMaxZ();
+        int minZ = this.getMinZ();
+        int dz = maxZ - minZ;
+
+
+        boolean[][][] grid = new boolean[dx+1][dy+1][dz+1];
+
+        for(LinkedCube cube: cubes) {
+            int x = cube.getPoint().x() - minX;
+            int y = cube.getPoint().y() - minY;
+            int z = cube.getPoint().z() - minZ;
+            grid[x][y][z] = true;
+        }
+
+
         StringBuilder sb = new StringBuilder();
+
+        sb.append("\n~~~~Start PolyCube~~~\n\n");
+
+        sb.append("Volume: ").append(volume);
+        sb.append("\nHashcode: ").append(this.hashCode());
+        sb.append("\n");
+
+        int count = 1;
+        for(LinkedCube cube: cubes) {
+            sb.append("\nCube ").append(count).append("/").append(volume).append(": ");
+            sb.append("\n").append(cube.toString()).append("\n");
+            count++;
+        }
+
+        sb.append("\n");
 
         for (int z = 0; z < grid[0][0].length; z++) {
             sb.append("Layer ").append(z).append(":\n");
 
-            for (Cube[][] cubes : grid) {
+            for (boolean[][] cubes : grid) {
                 for (int x = 0; x < grid[0].length; x++) {
-                    if (cubes[x][z] != null) {
+                    if (cubes[x][z]) {
                         sb.append("[").append("#").append("]");
                     } else {
                         sb.append("[ ]");
@@ -271,223 +232,10 @@ public class Polycube implements Serializable {
             }
             sb.append("\n");
         }
+
+        sb.append("~~~~End PolyCube~~~");
+
         return sb.toString();
     }
 
-    public void printMetrics() {
-        System.out.println("Volume: " + volume);
-        System.out.println("Bounding box: [" + this.grid.length + ", " + this.grid[0].length + ", " + this.grid[0][0].length + "]");
-        System.out.println("HashCode: " + this.hashCode());
-        //System.out.println("Ben's numbers: " + Arrays.toString(getBensNumbers()));
-    }
-
-    //Called Bens numbers because I could not find a good name for this metric.
-    //this finds how many visible faces there are when viewed from each of the 6 directions
-    //BUT - it only considers faces that are on the layer that is furthest from the viewing side that that contains a visible face.
-    //Hard to explain but spin a real polycube around in your hand and look at it from any 90 degree angle. Bens number is the count of visible faces from the layer furthest from your face that still have a visible face.
-    private int[] getBensNumbers() {
-        //TODO make these methods return a hashmap which is a collection of how many faces can see the boundry at each layer. add all that up into one master hashmap using putAll, then hash that to get Bens Hash!
-        int[] counts = new int[6];
-        counts[0] = getNumberFromLowX();
-        counts[1] = getNumberFromHighX();
-        counts[2] = getNumberFromLowY();
-        counts[3] = getNumberFromHighY();
-        counts[4] = getNumberFromLowZ();
-        counts[5] = getNumberFromHighZ();
-
-        Arrays.sort(counts);
-        return counts;
-    }
-
-    private boolean hasClearPathToBoundary(int x, int y, int z, String direction) {
-        switch (direction) {
-            case "low x":
-                for (int i = x + 1; i < grid.length; i++) {
-                    if (grid[i][y][z] != null) return false;
-                }
-                break;
-            case "high x":
-                for (int i = 0; i < x; i++) {
-                    if (grid[i][y][z] != null) return false;
-                }
-                break;
-            case "low y":
-                for (int j = y + 1; j < grid[0].length; j++) {
-                    if (grid[x][j][z] != null) return false;
-                }
-                break;
-            case "high y":
-                for (int j = 0; j < y; j++) {
-                    if (grid[x][j][z] != null) return false;
-                }
-                break;
-            case "low z":
-                for (int k = z + 1; k < grid[0][0].length; k++) {
-                    if (grid[x][y][k] != null) return false;
-                }
-                break;
-            case "high z":
-                for (int k = 0; k < z; k++) {
-                    if (grid[x][y][k] != null) return false;
-                }
-                break;
-        }
-        return true;
-    }
-
-    private int getNumberFromLowX() {
-        int xLen = grid.length;
-        int yLen = grid[0].length;
-        int zLen = grid[0][0].length;
-
-        for (int x = 0; x < xLen; x++) {
-            int cubesInCurrentLayer = 0;
-            boolean foundTargetLayer = false;
-
-            for (int y = 0; y < yLen; y++) {
-                for (int z = 0; z < zLen; z++) {
-                    if (grid[x][y][z] != null && hasClearPathToBoundary(x, y, z, "low x")) {
-                        cubesInCurrentLayer++;
-                        foundTargetLayer = true;
-                    }
-                }
-            }
-
-            if (foundTargetLayer) {
-                return cubesInCurrentLayer;
-            }
-        }
-
-        return 0;
-    }
-
-    private int getNumberFromHighX() {
-        int xLen = grid.length;
-        int yLen = grid[0].length;
-        int zLen = grid[0][0].length;
-
-        for (int x = xLen - 1; x >= 0; x--) {
-            int cubesInCurrentLayer = 0;
-            boolean foundTargetLayer = false;
-
-            for (int y = 0; y < yLen; y++) {
-                for (int z = 0; z < zLen; z++) {
-                    if (grid[x][y][z] != null && hasClearPathToBoundary(x, y, z, "high x")) {
-                        cubesInCurrentLayer++;
-                        foundTargetLayer = true;
-                    }
-                }
-            }
-
-            if (foundTargetLayer) {
-                return cubesInCurrentLayer;
-            }
-        }
-
-        return 0;
-    }
-
-    private int getNumberFromLowY() {
-        int xLen = grid.length;
-        int yLen = grid[0].length;
-        int zLen = grid[0][0].length;
-
-        for (int y = 0; y < yLen; y++) {
-            int cubesInCurrentLayer = 0;
-            boolean foundTargetLayer = false;
-
-            for (int x = 0; x < xLen; x++) {
-                for (int z = 0; z < zLen; z++) {
-                    if (grid[x][y][z] != null && hasClearPathToBoundary(x, y, z, "low y")) {
-                        cubesInCurrentLayer++;
-                        foundTargetLayer = true;
-                    }
-                }
-            }
-
-            if (foundTargetLayer) {
-                return cubesInCurrentLayer;
-            }
-        }
-
-        return 0;
-    }
-
-    private int getNumberFromHighY() {
-        int xLen = grid.length;
-        int yLen = grid[0].length;
-        int zLen = grid[0][0].length;
-
-        for (int y = yLen - 1; y >= 0; y--) {
-            int cubesInCurrentLayer = 0;
-            boolean foundTargetLayer = false;
-
-            for (int x = 0; x < xLen; x++) {
-                for (int z = 0; z < zLen; z++) {
-                    if (grid[x][y][z] != null && hasClearPathToBoundary(x, y, z, "high y")) {
-                        cubesInCurrentLayer++;
-                        foundTargetLayer = true;
-                    }
-                }
-            }
-
-            if (foundTargetLayer) {
-                return cubesInCurrentLayer;
-            }
-        }
-
-        return 0;
-    }
-
-    private int getNumberFromLowZ() {
-        int xLen = grid.length;
-        int yLen = grid[0].length;
-        int zLen = grid[0][0].length;
-
-        for (int z = 0; z < zLen; z++) {
-            int cubesInCurrentLayer = 0;
-            boolean foundTargetLayer = false;
-
-            for (int x = 0; x < xLen; x++) {
-                for (int y = 0; y < yLen; y++) {
-                    if (grid[x][y][z] != null && hasClearPathToBoundary(x, y, z, "low z")) {
-                        cubesInCurrentLayer++;
-                        foundTargetLayer = true;
-                    }
-                }
-            }
-
-            if (foundTargetLayer) {
-                return cubesInCurrentLayer;
-            }
-        }
-
-        return 0;
-    }
-
-    private int getNumberFromHighZ() {
-        int xLen = grid.length;
-        int yLen = grid[0].length;
-        int zLen = grid[0][0].length;
-
-        for (int z = zLen - 1; z >= 0; z--) {
-            int cubesInCurrentLayer = 0;
-            boolean foundTargetLayer = false;
-
-            for (int x = 0; x < xLen; x++) {
-                for (int y = 0; y < yLen; y++) {
-                    if (grid[x][y][z] != null && hasClearPathToBoundary(x, y, z, "high z")) {
-                        cubesInCurrentLayer++;
-                        foundTargetLayer = true;
-                    }
-                }
-            }
-
-            if (foundTargetLayer) {
-                return cubesInCurrentLayer;
-            }
-        }
-
-        return 0;
-    }
 }
