@@ -21,16 +21,17 @@ public class Polycube implements Serializable {
     private Cube[][][] grid;
     private int volume;
 
+
     //Creates the one and only perfect MonoCube
     public Polycube() {
         this.grid = new Cube[1][1][1];
         this.volume = 0;
-        this.addCube(new Coordinate(0, 0, 0));
+        this.addCube(new Point(0, 0, 0));
     }
 
-    public Polycube(Polycube polycube, Coordinate newCubeCoordinate) {
+    public Polycube(Polycube polycube, Point newCubePoint) {
         this(polycube);
-        this.addCube(newCubeCoordinate);
+        this.addCube(newCubePoint);
         this.shrinkGrid();
     }
 
@@ -78,43 +79,43 @@ public class Polycube implements Serializable {
         return this.grid;
     }
 
-    public void addCube(Coordinate coordinate) {
+    public void addCube(Point point) {
         this.volume += 1;
 
         int xSize = grid.length;
         int ySize = grid[0].length;
         int zSize = grid[0][0].length;
 
-        this.grid[coordinate.x()][coordinate.y()][coordinate.z()] = new Cube();
+        this.grid[point.x()][point.y()][point.z()] = new Cube();
 
         for (int x = 0; x < xSize; x++) {
             for (int y = 0; y < ySize; y++) {
                 for (int z = 0; z < zSize; z++) {
                     if (grid[x][y][z] != null) {
 
-                        if (x == coordinate.x() && y == coordinate.y() && z == coordinate.z()) {
+                        if (x == point.x() && y == point.y() && z == point.z()) {
                             continue;
                         }
 
-                        int dx = Math.abs(coordinate.x() - x);
-                        int dy = Math.abs(coordinate.y() - y);
-                        int dz = Math.abs(coordinate.z() - z);
+                        int dx = Math.abs(point.x() - x);
+                        int dy = Math.abs(point.y() - y);
+                        int dz = Math.abs(point.z() - z);
 
                         int manhattanDistance = dx + dy + dz;
                         double euclideanDistance = Math.sqrt((dx * dx) + (dy * dy) + (dz * dz));
                         euclideanDistance = Math.round(euclideanDistance * SCALE) / SCALE;
 
                         grid[x][y][z].addDistances(euclideanDistance, manhattanDistance);
-                        grid[coordinate.x()][coordinate.y()][coordinate.z()].addDistances(euclideanDistance, manhattanDistance);
+                        grid[point.x()][point.y()][point.z()].addDistances(euclideanDistance, manhattanDistance);
                     }
                 }
             }
         }
     }
 
-    public List<Coordinate> getValidNewCubePlacements() {
+    public List<Point> getValidNewCubePlacements() {
         this.addBuffer();
-        List<Coordinate> validPlacements = new ArrayList<>();
+        List<Point> validPlacements = new ArrayList<>();
         int xSize = grid.length;
         int ySize = grid[0].length;
         int zSize = grid[0][0].length;
@@ -133,7 +134,7 @@ public class Polycube implements Serializable {
                             continue;
                         }
                         if (this.grid[xOffset][yOffset][zOffset] != null) {
-                            validPlacements.add(new Coordinate(x, y, z));
+                            validPlacements.add(new Point(x, y, z));
                         }
                     }
                 }

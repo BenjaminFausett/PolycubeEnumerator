@@ -1,6 +1,6 @@
 package controller;
 
-import model.Coordinate;
+import model.Point;
 import model.Polycube;
 import model.PolycubeRepository;
 
@@ -29,16 +29,16 @@ public class PolycubeCalculator {
                 System.out.printf("%-5s %d%n", i, polycubes.size());
 
                 polycubes.parallelStream().forEach(polycube -> {
-                    List<Coordinate> coordinates = polycube.getValidNewCubePlacements();
-                    coordinates.parallelStream().forEach(coordinate -> {
-                        Polycube candidateCube = new Polycube(polycube, coordinate);
+                    List<Point> points = polycube.getValidNewCubePlacements();
+                    points.parallelStream().forEach(point -> {
+                        Polycube candidateCube = new Polycube(polycube, point);
                         if (!polycubeRepository.exists(candidateCube)) {
                             polycubeRepository.add(candidateCube);
                         }
                     });
                 });
                 //TODO make backup saving and loading fast. use ActiveJ Serializer says google
-                polycubeRepository.backupPolyCubes(i + 1);
+                //polycubeRepository.backupPolyCubes(i + 1);
                 polycubeRepository.clearPolyCubes(i);
             }
 
