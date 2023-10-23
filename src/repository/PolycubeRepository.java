@@ -329,7 +329,7 @@ public class PolycubeRepository {
             n--;
         }
 
-        if (n == 0 && !Options.USE_CACHE) {//no backup so starting from 1. ill be a pal and generate all the cubes for n = 1 for you
+        if (n == 0 || !Options.USE_CACHE) {//no backup so starting from 1. ill be a pal and generate all the cubes for n = 1 for you
             Polycube monoCube = new Polycube();
             monoCubes.add(monoCube);
             largestCompletedN = 1;
