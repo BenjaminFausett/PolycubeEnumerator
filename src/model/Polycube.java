@@ -16,10 +16,12 @@ public class Polycube implements Serializable {
 
     private final List<Cube> cubes;
 
+    public static long trueEqualsCalls = 0;
+
     //Creates the one and only perfect MonoCube
     public Polycube() {
         this.cubes = new ArrayList<>();
-        this.cubes.add(new Cube((short) 100, (short) 100, (short) 100));
+        this.cubes.add(new Cube((byte) 64, (byte) 64, (byte) 64));
     }
 
     private Polycube(Polycube polycube) {
@@ -42,9 +44,9 @@ public class Polycube implements Serializable {
         Cube newCube = new Cube(point);
 
         for (Cube cube : cubes) {
-            int dx = Math.abs(cube.getPoint().x() - newCube.getPoint().x());
-            int dy = Math.abs(cube.getPoint().y() - newCube.getPoint().y());
-            int dz = Math.abs(cube.getPoint().z() - newCube.getPoint().z());
+            int dx = Math.abs(cube.x() - newCube.x());
+            int dy = Math.abs(cube.y() - newCube.y());
+            int dz = Math.abs(cube.z() - newCube.z());
 
             int manhattanDistance = dx + dy + dz;
             double euclideanDistance = Math.sqrt((dx * dx) + (dy * dy) + (dz * dz));
@@ -64,14 +66,14 @@ public class Polycube implements Serializable {
         Set<Point> validPlacements = new HashSet<>();
 
         cubes.forEach(cube -> {
-            validPlacements.add(new Point((short) (cube.getPoint().x() - 1), cube.getPoint().y(), cube.getPoint().z()));
-            validPlacements.add(new Point((short) (cube.getPoint().x() + 1), cube.getPoint().y(), cube.getPoint().z()));
+            validPlacements.add(new Point((byte) (cube.x() - 1), cube.y(), cube.z()));
+            validPlacements.add(new Point((byte) (cube.x() + 1), cube.y(), cube.z()));
 
-            validPlacements.add(new Point(cube.getPoint().x(), (short) (cube.getPoint().y() - 1), cube.getPoint().z()));
-            validPlacements.add(new Point(cube.getPoint().x(), (short) (cube.getPoint().y() + 1), cube.getPoint().z()));
+            validPlacements.add(new Point(cube.x(), (byte) (cube.y() - 1), cube.z()));
+            validPlacements.add(new Point(cube.x(), (byte) (cube.y() + 1), cube.z()));
 
-            validPlacements.add(new Point(cube.getPoint().x(), cube.getPoint().y(), (short) (cube.getPoint().z() - 1)));
-            validPlacements.add(new Point(cube.getPoint().x(), cube.getPoint().y(), (short) (cube.getPoint().z() + 1)));
+            validPlacements.add(new Point(cube.x(), cube.y(), (byte) (cube.z() - 1)));
+            validPlacements.add(new Point(cube.x(), cube.y(), (byte) (cube.z() + 1)));
         });
 
         cubes.forEach(cube -> validPlacements.remove(cube.getPoint()));
@@ -88,35 +90,36 @@ public class Polycube implements Serializable {
         int ySum = 0;
         int zSum = 0;
 
-        int maxX = Integer.MIN_VALUE;
-        int minX = Integer.MAX_VALUE;
+        byte maxX = Byte.MIN_VALUE;
+        byte minX = Byte.MAX_VALUE;
 
-        int maxY = Integer.MIN_VALUE;
-        int minY = Integer.MAX_VALUE;
+        byte maxY = Byte.MIN_VALUE;
+        byte minY = Byte.MAX_VALUE;
 
-        int maxZ = Integer.MIN_VALUE;
-        int minZ = Integer.MAX_VALUE;
+        byte maxZ = Byte.MIN_VALUE;
+        byte minZ = Byte.MAX_VALUE;
 
         for (Cube cube : cubes) {
-            Point point = cube.getPoint();
-            if (minX > point.x()) minX = point.x();
-            if (maxX < point.x()) maxX = point.x();
+            if (minX > cube.x()) minX = cube.x();
+            if (maxX < cube.x()) maxX = cube.x();
 
-            if (minY > point.y()) minY = point.y();
-            if (maxY < point.y()) maxY = point.y();
+            if (minY > cube.y()) minY = cube.y();
+            if (maxY < cube.y()) maxY = cube.y();
 
-            if (minZ > point.z()) minZ = point.z();
-            if (maxZ < point.z()) maxZ = point.z();
+            if (minZ > cube.z()) minZ = cube.z();
+            if (maxZ < cube.z()) maxZ = cube.z();
 
-            xSum += cube.getPoint().x();
-            ySum += cube.getPoint().y();
-            zSum += cube.getPoint().z();
+            xSum += cube.x();
+            ySum += cube.y();
+            zSum += cube.z();
         }
 
         xSum = xSum - (cubes.size() * minX);
         ySum = ySum - (cubes.size() * minY);
         zSum = zSum - (cubes.size() * minZ);
 
+
+        //pretty sure this is wrong but everytime i try to fix it the program breaks
         long centerMassX = Math.round(((double) xSum / cubes.size()) * Config.DECIMAL_SCALING);
         long centerMassY = Math.round(((double) ySum / cubes.size()) * Config.DECIMAL_SCALING);
         long centerMassZ = Math.round(((double) zSum / cubes.size()) * Config.DECIMAL_SCALING);
@@ -163,7 +166,7 @@ public class Polycube implements Serializable {
         }
 
         boolean areEqual = RotationComparator.trueEquals(thisGrid, otherGrid);
-
+        trueEqualsCalls += 1;
         if (Config.DEBUG_ON && !areEqual) {
             System.out.println("------------------------");
             System.out.println(this);
@@ -175,38 +178,37 @@ public class Polycube implements Serializable {
     }
 
     public boolean[][][] toGrid() {
-        int maxX = Integer.MIN_VALUE;
-        int minX = Integer.MAX_VALUE;
+        byte maxX = Byte.MIN_VALUE;
+        byte minX = Byte.MAX_VALUE;
 
-        int maxY = Integer.MIN_VALUE;
-        int minY = Integer.MAX_VALUE;
+        byte maxY = Byte.MIN_VALUE;
+        byte minY = Byte.MAX_VALUE;
 
-        int maxZ = Integer.MIN_VALUE;
-        int minZ = Integer.MAX_VALUE;
+        byte maxZ = Byte.MIN_VALUE;
+        byte minZ = Byte.MAX_VALUE;
 
         for (Cube cube : cubes) {
-            Point point = cube.getPoint();
-            if (minX > point.x()) minX = point.x();
-            if (maxX < point.x()) maxX = point.x();
+            if (minX > cube.x()) minX = cube.x();
+            if (maxX < cube.x()) maxX = cube.x();
 
-            if (minY > point.y()) minY = point.y();
-            if (maxY < point.y()) maxY = point.y();
+            if (minY > cube.y()) minY = cube.y();
+            if (maxY < cube.y()) maxY = cube.y();
 
-            if (minZ > point.z()) minZ = point.z();
-            if (maxZ < point.z()) maxZ = point.z();
+            if (minZ > cube.z()) minZ = cube.z();
+            if (maxZ < cube.z()) maxZ = cube.z();
         }
 
-        int dx = maxX - minX;
-        int dy = maxY - minY;
-        int dz = maxZ - minZ;
+        byte dx = (byte) (maxX - minX);
+        byte dy = (byte) (maxY - minY);
+        byte dz = (byte) (maxZ - minZ);
 
 
         boolean[][][] grid = new boolean[dx + 1][dy + 1][dz + 1];
 
         for (Cube cube : cubes) {
-            int x = cube.getPoint().x() - minX;
-            int y = cube.getPoint().y() - minY;
-            int z = cube.getPoint().z() - minZ;
+            byte x = (byte) (cube.x() - minX);
+            byte y = (byte) (cube.y() - minY);
+            byte z = (byte) (cube.z() - minZ);
             grid[x][y][z] = true;
         }
 

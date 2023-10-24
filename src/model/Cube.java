@@ -1,19 +1,24 @@
 package model;
 
 
+import config.Config;
 import model.records.Point;
 
 import java.io.Serializable;
 
 public class Cube implements Comparable<Cube>, Serializable {
 
-    private final Point point;
-    private short euclideanDistancesSum;
-    private short manhattanDistancesSum;
+    private final byte x;
+    private final byte y;
+    private final byte z;
+    private int euclideanDistancesSum;
+    private int manhattanDistancesSum;
     private int hashCode;
 
-    public Cube(short x, short y, short z) {
-        this.point = new Point(x, y, z);
+    public Cube(byte x, byte y, byte z) {
+        this.x = x;
+        this.y = y;
+        this.z = z;
         this.euclideanDistancesSum = 0;
         this.manhattanDistancesSum = 0;
         this.hashCode = 0;
@@ -24,7 +29,9 @@ public class Cube implements Comparable<Cube>, Serializable {
     }
 
     public Cube(Cube cube) {
-        this.point = new Point(cube.point.x(), cube.point.y(), cube.point.z());
+        this.x = cube.x;
+        this.y = cube.y;
+        this.z = cube.z;
         this.euclideanDistancesSum = cube.euclideanDistancesSum;
         this.manhattanDistancesSum = cube.manhattanDistancesSum;
         this.hashCode = cube.hashCode;
@@ -52,8 +59,24 @@ public class Cube implements Comparable<Cube>, Serializable {
         this.euclideanDistancesSum += distance;
     }
 
+    public void setDistanceToCenterMass(double distance) {
+        this.distanceToCenterMass = distance;
+    }
+
     public Point getPoint() {
-        return point;
+        return new Point(this.x, this.y, this.z);
+    }
+
+    public byte x() {
+        return x;
+    }
+
+    public byte y() {
+        return y;
+    }
+
+    public byte z() {
+        return z;
     }
 
     @Override
@@ -65,7 +88,7 @@ public class Cube implements Comparable<Cube>, Serializable {
     public String toString() {
         String cube = "";
 
-        cube += "Point: " + point.toString();
+        cube += "Point: " + getPoint().toString();
         cube += "\nManhattan Sum: " + this.manhattanDistancesSum;
         cube += "\nEuclidean Sum: " + this.euclideanDistancesSum;
         cube += "\nHashcode: " + this.hashCode;
