@@ -12,8 +12,8 @@ public class Cube implements Comparable<Cube>, Serializable {
     private short manhattanDistancesSum;
     private int hashCode;
 
-    public Cube(int x, int y, int z) {
-        this.point = new Point((short) x, (short) y, (short) z);
+    public Cube(short x, short y, short z) {
+        this.point = new Point(x, y, z);
         this.euclideanDistancesSum = 0;
         this.manhattanDistancesSum = 0;
         this.hashCode = 0;

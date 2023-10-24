@@ -19,7 +19,7 @@ public class Polycube implements Serializable {
     //Creates the one and only perfect MonoCube
     public Polycube() {
         this.cubes = new ArrayList<>();
-        this.cubes.add(new Cube(100, 100, 100));
+        this.cubes.add(new Cube((short) 100, (short) 100, (short) 100));
     }
 
     private Polycube(Polycube polycube) {
