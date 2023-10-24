@@ -59,14 +59,6 @@ public class Cube implements Comparable<Cube>, Serializable {
         this.euclideanDistancesSum += distance;
     }
 
-    public void setDistanceToCenterMass(double distance) {
-        this.distanceToCenterMass = distance;
-    }
-
-    public Point getPoint() {
-        return new Point(this.x, this.y, this.z);
-    }
-
     public byte x() {
         return x;
     }
@@ -85,11 +77,10 @@ public class Cube implements Comparable<Cube>, Serializable {
     }
 
     @Override
-    public String toString() {
+    public String toString() {//for debugging
         String cube = "";
 
-        cube += "Point: " + getPoint().toString();
-        cube += "\nManhattan Sum: " + this.manhattanDistancesSum;
+        cube += "Manhattan Sum: " + this.manhattanDistancesSum;
         cube += "\nEuclidean Sum: " + this.euclideanDistancesSum;
         cube += "\nHashcode: " + this.hashCode;
 

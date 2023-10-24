@@ -2,12 +2,6 @@ package model.util;
 
 public class RotationComparator {
 
-    //TODO:
-// 4 rotations about axis 0
-// rotate 180 about axis 1, 4 rotations about axis 0
-// rotate 90 or 270 about axis 1, 8 rotations about axis 2
-// rotate about axis 2, 8 rotations about axis 1
-
     public static boolean trueEquals(boolean[][][] grid1, boolean[][][] grid2) {
         int grid1Volume = grid1.length * grid1[0].length * grid1[0][0].length;
         int grid2Volume = grid2.length * grid2[0].length * grid2[0][0].length;
@@ -15,36 +9,34 @@ public class RotationComparator {
         if (grid1Volume != grid2Volume) {
             return false;
         }
-
-        boolean[][][] grid1Reflected = reflectAcrossX(grid1);
-
-        // Check the original and reflected orientation first
-        if (compareGrids(grid1, grid2) || compareGrids(grid1Reflected, grid2)) {
+        if (compareGrids(grid1, grid2)) {
+            return true;
+        }
+        if (rotationallyEquals(grid1, grid2)) {
             return true;
         }
 
-        for (int x = 0; x < 2; x++) { // Rotate about X-axis (original and one more rotation)
+        grid1 = reflectAcrossX(grid1);
+        return rotationallyEquals(grid1, grid2);
+    }
+
+    private static boolean rotationallyEquals(boolean[][][] grid1, boolean[][][] grid2) {
+        for (int x = 0; x < 2; x++) {
             grid1 = rotateX(grid1);
-            grid1Reflected = rotateX(grid1Reflected);
 
-            for (int z = 0; z < 4; z++) { // Rotate about Z-axis
+            for (int z = 0; z < 4; z++) {
                 grid1 = rotateZ(grid1);
-                grid1Reflected = rotateZ(grid1Reflected);
-
-                if (compareGrids(grid1, grid2) || compareGrids(grid1Reflected, grid2)) {
+                if (compareGrids(grid1, grid2)) {
                     return true;
                 }
 
-                for (int y = 0; y < 4; y++) { // Rotate about Y-axis
+                for (int y = 0; y < 4; y++) {
                     grid1 = rotateY(grid1);
-                    grid1Reflected = rotateY(grid1Reflected);
-
-                    if (compareGrids(grid1, grid2) || compareGrids(grid1Reflected, grid2)) {
+                    if (compareGrids(grid1, grid2)) {
                         return true;
                     }
                 }
             }
-
         }
         return false;
     }

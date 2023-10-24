@@ -32,7 +32,7 @@ ROTATIONS_ON = true
 11    1279537
 12    9371094
 
-n = 12 finished in 52.9s
+n = 12 finished in 52.1s
 
 http://kevingong.com/Polyominoes/Enumeration.html
 https://github.com/mikepound/cubes/issues/23

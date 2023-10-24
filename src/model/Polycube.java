@@ -1,24 +1,20 @@
 package model;
 
 import config.Config;
-import model.records.BenPair;
 import model.records.Point;
 import model.util.RotationComparator;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class Polycube implements Serializable {
 
     private final List<Cube> cubes;
 
-    public static long trueEqualsCalls = 0;
-
-    //Creates the one and only perfect MonoCube
+    /**
+     * Creates the one and only perfect MonoCube
+     */
     public Polycube() {
         this.cubes = new ArrayList<>();
         this.cubes.add(new Cube((byte) 64, (byte) 64, (byte) 64));
@@ -76,64 +72,13 @@ public class Polycube implements Serializable {
             validPlacements.add(new Point(cube.x(), cube.y(), (byte) (cube.z() + 1)));
         });
 
-        cubes.forEach(cube -> validPlacements.remove(cube.getPoint()));
+        cubes.forEach(cube -> validPlacements.remove(new Point(cube.x(), cube.y(), cube.z())));
 
         return validPlacements;
     }
 
     public int getVolume() {
         return this.cubes.size();
-    }
-
-    public int centerMassToCenterGridDistanceHash() {
-        int xSum = 0;
-        int ySum = 0;
-        int zSum = 0;
-
-        byte maxX = Byte.MIN_VALUE;
-        byte minX = Byte.MAX_VALUE;
-
-        byte maxY = Byte.MIN_VALUE;
-        byte minY = Byte.MAX_VALUE;
-
-        byte maxZ = Byte.MIN_VALUE;
-        byte minZ = Byte.MAX_VALUE;
-
-        for (Cube cube : cubes) {
-            if (minX > cube.x()) minX = cube.x();
-            if (maxX < cube.x()) maxX = cube.x();
-
-            if (minY > cube.y()) minY = cube.y();
-            if (maxY < cube.y()) maxY = cube.y();
-
-            if (minZ > cube.z()) minZ = cube.z();
-            if (maxZ < cube.z()) maxZ = cube.z();
-
-            xSum += cube.x();
-            ySum += cube.y();
-            zSum += cube.z();
-        }
-
-        xSum = xSum - (cubes.size() * minX);
-        ySum = ySum - (cubes.size() * minY);
-        zSum = zSum - (cubes.size() * minZ);
-
-
-        //pretty sure this is wrong but everytime i try to fix it the program breaks
-        long centerMassX = Math.round(((double) xSum / cubes.size()) * Config.DECIMAL_SCALING);
-        long centerMassY = Math.round(((double) ySum / cubes.size()) * Config.DECIMAL_SCALING);
-        long centerMassZ = Math.round(((double) zSum / cubes.size()) * Config.DECIMAL_SCALING);
-
-        long centerGridX = Math.round(((double) (maxX - minX) / 2) * Config.DECIMAL_SCALING);
-        long centerGridY = Math.round(((double) (maxY - minY) / 2) * Config.DECIMAL_SCALING);
-        long centerGridZ = Math.round(((double) (maxZ - minZ) / 2) * Config.DECIMAL_SCALING);
-
-        long dx = centerMassX - centerGridX;
-        long dy = centerMassY - centerGridY;
-        long dz = centerMassZ - centerGridZ;
-
-        long euclideanDistance = (dx * dx) + (dy * dy) + (dz * dz);
-        return Long.hashCode(Math.round(euclideanDistance * Config.DECIMAL_SCALING));
     }
 
     @Override
@@ -147,10 +92,6 @@ public class Polycube implements Serializable {
             return false;
         }
 
-        if (this.centerMassToCenterGridDistanceHash() != other.centerMassToCenterGridDistanceHash()) {
-            return false;
-        }
-
         Set<Integer> thisHashes = cubes.stream().map(Cube::hashCode).collect(Collectors.toSet());
         Set<Integer> otherHashes = other.cubes.stream().map(Cube::hashCode).collect(Collectors.toSet());
 
@@ -161,12 +102,7 @@ public class Polycube implements Serializable {
         boolean[][][] thisGrid = this.toGrid();
         boolean[][][] otherGrid = other.toGrid();
 
-        if (!this.getBenPairs(thisGrid).equals(other.getBenPairs(otherGrid))) {
-            return false;
-        }
-
         boolean areEqual = RotationComparator.trueEquals(thisGrid, otherGrid);
-        trueEqualsCalls += 1;
         if (Config.DEBUG_ON && !areEqual) {
             System.out.println("------------------------");
             System.out.println(this);
@@ -216,7 +152,7 @@ public class Polycube implements Serializable {
     }
 
     @Override
-    public String toString() {
+    public String toString() {//for debugging
         boolean[][][] grid = this.toGrid();
 
         StringBuilder sb = new StringBuilder();
@@ -224,9 +160,7 @@ public class Polycube implements Serializable {
         sb.append("\n~~~~Start PolyCube~~~\n\n");
 
         sb.append("Volume: ").append(this.cubes.size());
-        sb.append("\nBen Pairs: ").append(this.getBenPairs(grid));
         sb.append("\nHashcode: ").append(this.hashCode());
-        sb.append("\nCenter Mass hash: ").append(this.centerMassToCenterGridDistanceHash());
         sb.append("\n");
 
         int count = 1;
@@ -258,175 +192,4 @@ public class Polycube implements Serializable {
 
         return sb.toString();
     }
-
-    public Set<BenPair> getBenPairs(final boolean[][][] grid) {
-        Set<BenPair> benPairs = new HashSet<>();
-
-        BenPair xBenPair = new BenPair(getBenNumberFromLowX(grid), getBenNumberFromHighX(grid));
-        BenPair yBenPair = new BenPair(getBenNumberFromLowY(grid), getBenNumberFromHighY(grid));
-        BenPair zBenPair = new BenPair(getBenNumberFromLowZ(grid), getBenNumberFromHighZ(grid));
-
-        benPairs.add(xBenPair);
-        benPairs.add(yBenPair);
-        benPairs.add(zBenPair);
-
-        return benPairs;
-    }
-
-    private int getBenNumberFromHighX(final boolean[][][] grid) {
-        int xLen = grid.length;
-        int yLen = grid[0].length;
-        int zLen = grid[0][0].length;
-
-        for (int x = xLen - 1; x >= 0; x--) {
-            int cubesInCurrentLayer = 0;
-            boolean foundTargetLayer = false;
-
-            for (int y = 0; y < yLen; y++) {
-                for (int z = 0; z < zLen; z++) {
-                    if (grid[x][y][z]) {
-                        cubesInCurrentLayer++;
-                        foundTargetLayer = true;
-                    }
-                }
-            }
-
-            if (foundTargetLayer) {
-                return cubesInCurrentLayer;
-            }
-        }
-
-        return 0;
-    }
-
-    private int getBenNumberFromLowX(final boolean[][][] grid) {
-        int xLen = grid.length;
-        int yLen = grid[0].length;
-        int zLen = grid[0][0].length;
-
-        for (int x = 0; x < xLen; x++) {
-            int cubesInCurrentLayer = 0;
-            boolean foundTargetLayer = false;
-
-            for (int y = 0; y < yLen; y++) {
-                for (int z = 0; z < zLen; z++) {
-                    if (grid[x][y][z]) {
-                        cubesInCurrentLayer++;
-                        foundTargetLayer = true;
-                    }
-                }
-            }
-
-            if (foundTargetLayer) {
-                return cubesInCurrentLayer;
-            }
-        }
-
-        return 0;
-    }
-
-    private int getBenNumberFromHighY(final boolean[][][] grid) {
-        int xLen = grid.length;
-        int yLen = grid[0].length;
-        int zLen = grid[0][0].length;
-
-        for (int y = yLen - 1; y >= 0; y--) {
-            int cubesInCurrentLayer = 0;
-            boolean foundTargetLayer = false;
-
-            for (int x = 0; x < xLen; x++) {
-                for (int z = 0; z < zLen; z++) {
-                    if (grid[x][y][z]) {
-                        cubesInCurrentLayer++;
-                        foundTargetLayer = true;
-                    }
-                }
-            }
-
-            if (foundTargetLayer) {
-                return cubesInCurrentLayer;
-            }
-        }
-
-        return 0;
-    }
-
-    private int getBenNumberFromLowY(final boolean[][][] grid) {
-        int xLen = grid.length;
-        int yLen = grid[0].length;
-        int zLen = grid[0][0].length;
-
-        for (int y = 0; y < yLen; y++) {
-            int cubesInCurrentLayer = 0;
-            boolean foundTargetLayer = false;
-
-            for (int x = 0; x < xLen; x++) {
-                for (int z = 0; z < zLen; z++) {
-                    if (grid[x][y][z]) {
-                        cubesInCurrentLayer++;
-                        foundTargetLayer = true;
-                    }
-                }
-            }
-
-            if (foundTargetLayer) {
-                return cubesInCurrentLayer;
-            }
-        }
-
-        return 0;
-    }
-
-    private int getBenNumberFromHighZ(final boolean[][][] grid) {
-        int xLen = grid.length;
-        int yLen = grid[0].length;
-        int zLen = grid[0][0].length;
-
-        for (int z = zLen - 1; z >= 0; z--) {
-            int cubesInCurrentLayer = 0;
-            boolean foundTargetLayer = false;
-
-            for (int x = 0; x < xLen; x++) {
-                for (int y = 0; y < yLen; y++) {
-                    if (grid[x][y][z]) {
-                        cubesInCurrentLayer++;
-                        foundTargetLayer = true;
-                    }
-                }
-            }
-
-            if (foundTargetLayer) {
-                return cubesInCurrentLayer;
-            }
-        }
-
-        return 0;
-    }
-
-    private int getBenNumberFromLowZ(final boolean[][][] grid) {
-        int xLen = grid.length;
-        int yLen = grid[0].length;
-        int zLen = grid[0][0].length;
-
-        for (int z = 0; z < zLen; z++) {
-            int cubesInCurrentLayer = 0;
-            boolean foundTargetLayer = false;
-
-            for (int x = 0; x < xLen; x++) {
-                for (int y = 0; y < yLen; y++) {
-                    if (grid[x][y][z]) {
-                        cubesInCurrentLayer++;
-                        foundTargetLayer = true;
-                    }
-                }
-            }
-
-            if (foundTargetLayer) {
-                return cubesInCurrentLayer;
-            }
-        }
-
-        return 0;
-    }
-
 }
