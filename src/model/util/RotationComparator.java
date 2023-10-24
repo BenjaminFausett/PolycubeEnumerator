@@ -1,10 +1,8 @@
 package model.util;
 
-/**
- * This class is slow and should only be used for debugging purposes.
- */
 public class RotationComparator {
 
+    //TODO:
 // 4 rotations about axis 0
 // rotate 180 about axis 1, 4 rotations about axis 0
 // rotate 90 or 270 about axis 1, 8 rotations about axis 2

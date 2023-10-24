@@ -8,12 +8,12 @@ import java.io.Serializable;
 public class Cube implements Comparable<Cube>, Serializable {
 
     private final Point point;
-    private int euclideanDistancesSum;
-    private int manhattanDistancesSum;
+    private short euclideanDistancesSum;
+    private short manhattanDistancesSum;
     private int hashCode;
 
     public Cube(int x, int y, int z) {
-        this.point = new Point(x, y, z);
+        this.point = new Point((short) x, (short) y, (short) z);
         this.euclideanDistancesSum = 0;
         this.manhattanDistancesSum = 0;
         this.hashCode = 0;

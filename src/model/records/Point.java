@@ -2,5 +2,5 @@ package model.records;
 
 import java.io.Serializable;
 
-public record Point(int x, int y, int z) implements Serializable {
+public record Point(short x, short y, short z) implements Serializable {
 }
