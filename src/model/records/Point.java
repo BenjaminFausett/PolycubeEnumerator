@@ -1,4 +1,4 @@
 package model.records;
 
-public record Point(byte x, byte y, byte z) {
+public record Point(int x, int y, int z) {
 }

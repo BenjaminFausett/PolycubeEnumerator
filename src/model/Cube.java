@@ -1,39 +1,38 @@
 package model;
 
 
-import config.Config;
 import model.records.Point;
 
 import java.io.Serializable;
 
-public class Cube implements Comparable<Cube>, Serializable {
+public class Cube implements Serializable {
 
     private final byte x;
     private final byte y;
     private final byte z;
-    private int euclideanDistancesSum;
     private int manhattanDistancesSum;
+    private int euclideanDistancesSum;
     private int hashCode;
 
     public Cube(byte x, byte y, byte z) {
         this.x = x;
         this.y = y;
         this.z = z;
-        this.euclideanDistancesSum = 0;
         this.manhattanDistancesSum = 0;
+        this.euclideanDistancesSum = 0;
         this.hashCode = 0;
     }
 
     public Cube(Point point) {
-        this(point.x(), point.y(), point.z());
+        this((byte) point.x(), (byte) point.y(), (byte) point.z());
     }
 
     public Cube(Cube cube) {
         this.x = cube.x;
         this.y = cube.y;
         this.z = cube.z;
-        this.euclideanDistancesSum = cube.euclideanDistancesSum;
         this.manhattanDistancesSum = cube.manhattanDistancesSum;
+        this.euclideanDistancesSum = cube.euclideanDistancesSum;
         this.hashCode = cube.hashCode;
     }
 
@@ -44,7 +43,7 @@ public class Cube implements Comparable<Cube>, Serializable {
     @Override
     public int hashCode() {
         if (this.hashCode == 0) {
-            this.hashCode = (String.valueOf(manhattanDistancesSum) + euclideanDistancesSum).hashCode();
+            return (String.valueOf(manhattanDistancesSum) + euclideanDistancesSum).hashCode();
         }
         return this.hashCode;
     }
@@ -69,11 +68,6 @@ public class Cube implements Comparable<Cube>, Serializable {
 
     public byte z() {
         return z;
-    }
-
-    @Override
-    public int compareTo(Cube other) {
-        return this.hashCode() - other.hashCode();
     }
 
     @Override

@@ -101,72 +101,10 @@ public class PolycubeRepository {
     }
 
     public boolean exists(Polycube polycube) {
-        switch (polycube.getVolume()) {
-            case 1 -> {
-                return monoCubes.contains(polycube);
-            }
-            case 2 -> {
-                return diCubes.contains(polycube);
-            }
-            case 3 -> {
-                return triCubes.contains(polycube);
-            }
-            case 4 -> {
-                return tetraCubes.contains(polycube);
-            }
-            case 5 -> {
-                return pentaCubes.contains(polycube);
-            }
-            case 6 -> {
-                return hexaCubes.contains(polycube);
-            }
-            case 7 -> {
-                return heptaCubes.contains(polycube);
-            }
-            case 8 -> {
-                return octaCubes.contains(polycube);
-            }
-            case 9 -> {
-                return nonaCubes.contains(polycube);
-            }
-            case 10 -> {
-                return decaCubes.contains(polycube);
-            }
-            case 11 -> {
-                return undecaCubes.contains(polycube);
-            }
-            case 12 -> {
-                return dodecaCubes.contains(polycube);
-            }
-            case 13 -> {
-                return tridecaCubes.contains(polycube);
-            }
-            case 14 -> {
-                return tetradecaCubes.contains(polycube);
-            }
-            case 15 -> {
-                return pentadecaCubes.contains(polycube);
-            }
-            case 16 -> {
-                return hexadecaCubes.contains(polycube);
-            }
-            case 17 -> {
-                return heptadecaCubes.contains(polycube);
-            }
-            case 18 -> {
-                return octadecaCubes.contains(polycube);
-            }
-            case 19 -> {
-                return nonadecaCubes.contains(polycube);
-            }
-            case 20 -> {
-                return icosiCubes.contains(polycube);
-            }
-        }
-        return false;
+        return this.getPolycubes(polycube.getVolume()).contains(polycube);
     }
 
-    public Set<Polycube> getPolycubes(int n) {
+    public HashSet<Polycube> getPolycubes(int n) {
         switch (n) {
             case 1 -> {
                 return monoCubes;
@@ -312,7 +250,7 @@ public class PolycubeRepository {
         String filename = "polycube cache/cubes" + n + ".ser";
 
 
-        if(Files.notExists(Path.of(filename))) {
+        if (Files.notExists(Path.of(filename))) {
             FileOutputStream fileOut = new FileOutputStream(filename);
             ObjectOutputStream out = new ObjectOutputStream(fileOut);
             out.writeObject(this.getPolycubes(n));

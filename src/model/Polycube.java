@@ -5,12 +5,14 @@ import model.records.Point;
 import model.util.RotationComparator;
 
 import java.io.Serializable;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 public class Polycube implements Serializable {
 
-    private final List<Cube> cubes;
+    private final ArrayList<Cube> cubes;
 
     /**
      * Creates the one and only perfect MonoCube
@@ -20,6 +22,9 @@ public class Polycube implements Serializable {
         this.cubes.add(new Cube((byte) 64, (byte) 64, (byte) 64));
     }
 
+    /**
+     * Creates a deep copy of the passed polycube
+     */
     private Polycube(Polycube polycube) {
         this.cubes = new ArrayList<>();
         for (Cube cube : polycube.cubes) {
@@ -27,16 +32,54 @@ public class Polycube implements Serializable {
         }
     }
 
+    /**
+     * Creates a deep copy of the passed polycube and then adds a new cube at the given point
+     */
     public Polycube(Polycube polycube, Point newCubePoint) {
         this(polycube);
         this.addCube(newCubePoint);
     }
 
+    /**
+     * Returns a deep copy of this polycube
+     */
     public Polycube clone() {
         return new Polycube(this);
     }
 
-    public void addCube(Point point) {
+    /**
+     * Returns the number of cubes making up this polycube
+     */
+    public int getVolume() {
+        return this.cubes.size();
+    }
+
+    /**
+     * Returns a set of unique points, where each point is a valid location where a new cube could be added to this polycube
+     */
+    public Set<Point> getValidNewCubePoints() {
+        Set<Point> validPlacements = new HashSet<>();
+
+        cubes.forEach(cube -> {
+            validPlacements.add(new Point((cube.x() - 1), cube.y(), cube.z()));
+            validPlacements.add(new Point((cube.x() + 1), cube.y(), cube.z()));
+
+            validPlacements.add(new Point(cube.x(), (cube.y() - 1), cube.z()));
+            validPlacements.add(new Point(cube.x(), (cube.y() + 1), cube.z()));
+
+            validPlacements.add(new Point(cube.x(), cube.y(), (cube.z() - 1)));
+            validPlacements.add(new Point(cube.x(), cube.y(), (cube.z() + 1)));
+        });
+
+        cubes.forEach(cube -> validPlacements.remove(new Point(cube.x(), cube.y(), cube.z())));
+
+        return validPlacements;
+    }
+
+    /**
+     * Adds a cube to this polycube at the given point updates all cubes with the new manhattan and euclidean distances to each other cube
+     */
+    private void addCube(Point point) {
         Cube newCube = new Cube(point);
 
         for (Cube cube : cubes) {
@@ -44,7 +87,7 @@ public class Polycube implements Serializable {
             int dy = Math.abs(cube.y() - newCube.y());
             int dz = Math.abs(cube.z() - newCube.z());
 
-            int manhattanDistance = dx + dy + dz;
+            int manhattanDistance = (dx + dy + dz);
             double euclideanDistance = Math.sqrt((dx * dx) + (dy * dy) + (dz * dz));
             int euclideanDistanceHash = Double.hashCode(Math.round(euclideanDistance * Config.DECIMAL_SCALING) / Config.DECIMAL_SCALING);
 
@@ -58,70 +101,18 @@ public class Polycube implements Serializable {
         this.cubes.add(newCube);
     }
 
-    public Set<Point> getValidNewCubePoints() {
-        Set<Point> validPlacements = new HashSet<>();
+    /**
+     * Transforms the list of cubes into a 3d array of booleans which can be more easily used to compute rotations
+     */
+    private boolean[][][] toGrid() {
+        int maxX = Integer.MIN_VALUE;
+        int minX = Integer.MAX_VALUE;
 
-        cubes.forEach(cube -> {
-            validPlacements.add(new Point((byte) (cube.x() - 1), cube.y(), cube.z()));
-            validPlacements.add(new Point((byte) (cube.x() + 1), cube.y(), cube.z()));
+        int maxY = Integer.MIN_VALUE;
+        int minY = Integer.MAX_VALUE;
 
-            validPlacements.add(new Point(cube.x(), (byte) (cube.y() - 1), cube.z()));
-            validPlacements.add(new Point(cube.x(), (byte) (cube.y() + 1), cube.z()));
-
-            validPlacements.add(new Point(cube.x(), cube.y(), (byte) (cube.z() - 1)));
-            validPlacements.add(new Point(cube.x(), cube.y(), (byte) (cube.z() + 1)));
-        });
-
-        cubes.forEach(cube -> validPlacements.remove(new Point(cube.x(), cube.y(), cube.z())));
-
-        return validPlacements;
-    }
-
-    public int getVolume() {
-        return this.cubes.size();
-    }
-
-    @Override
-    public int hashCode() {
-        return cubes.stream().mapToInt(Cube::hashCode).sum();
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (!(obj instanceof Polycube other)) {
-            return false;
-        }
-
-        Set<Integer> thisHashes = cubes.stream().map(Cube::hashCode).collect(Collectors.toSet());
-        Set<Integer> otherHashes = other.cubes.stream().map(Cube::hashCode).collect(Collectors.toSet());
-
-        if(!thisHashes.equals(otherHashes)) {
-            return false;
-        }
-
-        boolean[][][] thisGrid = this.toGrid();
-        boolean[][][] otherGrid = other.toGrid();
-
-        boolean areEqual = RotationComparator.trueEquals(thisGrid, otherGrid);
-        if (Config.DEBUG_ON && !areEqual) {
-            System.out.println("------------------------");
-            System.out.println(this);
-            System.out.println(other);
-            System.out.println("------------------------");
-        }
-
-        return areEqual;
-    }
-
-    public boolean[][][] toGrid() {
-        byte maxX = Byte.MIN_VALUE;
-        byte minX = Byte.MAX_VALUE;
-
-        byte maxY = Byte.MIN_VALUE;
-        byte minY = Byte.MAX_VALUE;
-
-        byte maxZ = Byte.MIN_VALUE;
-        byte minZ = Byte.MAX_VALUE;
+        int maxZ = Integer.MIN_VALUE;
+        int minZ = Integer.MAX_VALUE;
 
         for (Cube cube : cubes) {
             if (minX > cube.x()) minX = cube.x();
@@ -134,21 +125,49 @@ public class Polycube implements Serializable {
             if (maxZ < cube.z()) maxZ = cube.z();
         }
 
-        byte dx = (byte) (maxX - minX);
-        byte dy = (byte) (maxY - minY);
-        byte dz = (byte) (maxZ - minZ);
+        int dx = (maxX - minX);
+        int dy = (maxY - minY);
+        int dz = (maxZ - minZ);
 
 
         boolean[][][] grid = new boolean[dx + 1][dy + 1][dz + 1];
 
         for (Cube cube : cubes) {
-            byte x = (byte) (cube.x() - minX);
-            byte y = (byte) (cube.y() - minY);
-            byte z = (byte) (cube.z() - minZ);
+            int x = (cube.x() - minX);
+            int y = (cube.y() - minY);
+            int z = (cube.z() - minZ);
             grid[x][y][z] = true;
         }
 
         return grid;
+    }
+
+    /**
+     * Returns the sum of all hash codes produced by the individual cubes that make up this polycube
+     */
+    @Override
+    public int hashCode() {
+        return cubes.stream().mapToInt(Cube::hashCode).sum();
+    }
+
+    /**
+     * Checks for true equality by first comparing if both polycubes have the same set of cube hashes. If the hashes don't match then returns false.
+     * If the hashes do match then we begrudgingly begin calculating and comparing all possible rotations to check if the polycubes are truly equal or not.
+     */
+    @Override
+    public boolean equals(Object obj) {
+        if (!(obj instanceof Polycube other)) {
+            return false;
+        }
+
+        Set<Integer> thisHashes = cubes.stream().map(Cube::hashCode).collect(Collectors.toSet());
+        Set<Integer> otherHashes = other.cubes.stream().map(Cube::hashCode).collect(Collectors.toSet());
+
+        if (!thisHashes.equals(otherHashes)) {
+            return false;
+        }
+
+        return RotationComparator.trueEquals(this.toGrid(), other.toGrid());
     }
 
     @Override
