@@ -15,7 +15,7 @@ import java.util.stream.Collectors;
 
 public class PolycubeEnumerator {
 
-    public static void calculatePolycubes(int n) throws IOException, ClassNotFoundException {
+    public static void calculatePolycubes(int n) throws IOException {
         Instant start = Instant.now();
         PolycubeRepository polycubeRepository = new PolycubeRepository();
 
@@ -34,14 +34,14 @@ public class PolycubeEnumerator {
 
                 polycubes.parallelStream().forEach(polycube -> {
                     Set<Point> points = polycube.getValidNewCubePoints();
-                    points.parallelStream().forEach(point -> {
+                    points.forEach(point -> {
                         Polycube candidateCube = new Polycube(polycube, point);
                         if (!polycubeRepository.exists(candidateCube)) {
                             polycubeRepository.add(candidateCube);
                         }
                     });
                 });
-                //TODO make backup saving and loading fast. use ActiveJ Serializer says google
+
                 polycubeRepository.backupPolyCubes(i + 1);
                 polycubeRepository.clearPolyCubes(i);
             }

@@ -1,12 +1,17 @@
 package repository;
 
+import com.esotericsoftware.kryo.Kryo;
+import com.esotericsoftware.kryo.io.Input;
+import com.esotericsoftware.kryo.io.Output;
 import config.Config;
+import model.Cube;
 import model.Polycube;
 
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -35,7 +40,7 @@ public class PolycubeRepository {
     private final HashSet<Polycube> icosiCubes;     //20
     private int largestCompletedN;
 
-    public PolycubeRepository() throws IOException, ClassNotFoundException {
+    public PolycubeRepository() throws IOException {
         monoCubes = new HashSet<>();
         diCubes = new HashSet<>();
         triCubes = new HashSet<>();
@@ -247,23 +252,27 @@ public class PolycubeRepository {
         }
         System.out.println("Started saving cache of cube size n = " + n);
 
-        String filename = "polycube cache/cubes" + n + ".ser";
+        String filename = "polycube cache/cubes" + n + ".bin";
 
+        new File("polycube cache").mkdirs();
 
         if (Files.notExists(Path.of(filename))) {
-            FileOutputStream fileOut = new FileOutputStream(filename);
-            ObjectOutputStream out = new ObjectOutputStream(fileOut);
-            out.writeObject(this.getPolycubes(n));
-            fileOut.close();
-            out.close();
+            Output output = new Output(new FileOutputStream(filename));
+            Kryo kryo = new Kryo();
+            kryo.register(HashSet.class);
+            kryo.register(Polycube.class);
+            kryo.register(ArrayList.class);
+            kryo.register(Cube.class);
+            kryo.writeObject(output, this.getPolycubes(n));
+            output.close();
         }
 
         System.out.println("Finished saving cache of cube size n = " + n);
     }
 
-    private void loadBackup() throws IOException, ClassNotFoundException {
+    private void loadBackup() throws IOException {
         int n = 20;
-        while (Files.notExists(Paths.get("polycube cache/cubes" + n + ".ser")) && n > 0) {
+        while (Files.notExists(Paths.get("polycube cache/cubes" + n + ".bin")) && n > 0) {
             n--;
         }
 
@@ -278,11 +287,17 @@ public class PolycubeRepository {
         this.largestCompletedN = n;
 
         try {
-            FileInputStream fileIn = new FileInputStream("polycube cache/cubes" + n + ".ser");
-            ObjectInputStream in = new ObjectInputStream(fileIn);
-            Set<Polycube> polycubes = (Set<Polycube>) in.readObject();
+            FileInputStream fileIn = new FileInputStream("polycube cache/cubes" + n + ".bin");
+            Kryo kryo = new Kryo();
+            kryo.register(HashSet.class);
+            kryo.register(Polycube.class);
+            kryo.register(ArrayList.class);
+            kryo.register(Cube.class);
 
-            in.close();
+            Input input = new Input(fileIn);
+            Set<Polycube> polycubes = kryo.readObject(input, HashSet.class);
+
+            input.close();
             fileIn.close();
 
             switch (n) {
@@ -308,7 +323,7 @@ public class PolycubeRepository {
                 case 20 -> icosiCubes.addAll(polycubes);
             }
             System.out.println("Loaded cache of cube size n = " + n);
-        } catch (IOException | ClassNotFoundException e) {
+        } catch (IOException e) {
             throw e;
         }
     }

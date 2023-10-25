@@ -3,14 +3,12 @@ package model;
 import config.Config;
 import model.records.Point;
 import model.util.RotationComparator;
-
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-public class Polycube implements Serializable {
+public class Polycube {
 
     private final ArrayList<Cube> cubes;
 
@@ -19,7 +17,7 @@ public class Polycube implements Serializable {
      */
     public Polycube() {
         this.cubes = new ArrayList<>();
-        this.cubes.add(new Cube((byte) 64, (byte) 64, (byte) 64));
+        this.cubes.add(new Cube());
     }
 
     /**

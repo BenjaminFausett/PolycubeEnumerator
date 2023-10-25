@@ -1,11 +1,8 @@
 package model;
 
-
 import model.records.Point;
 
-import java.io.Serializable;
-
-public class Cube implements Serializable {
+public class Cube {
 
     private final byte x;
     private final byte y;
@@ -13,6 +10,12 @@ public class Cube implements Serializable {
     private int manhattanDistancesSum;
     private int euclideanDistancesSum;
     private int hashCode;
+
+    public Cube() {
+        this.x = 64;
+        this.y = 64;
+        this.z = 64;
+    }
 
     public Cube(byte x, byte y, byte z) {
         this.x = x;
