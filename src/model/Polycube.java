@@ -3,6 +3,10 @@ package model;
 import config.Config;
 import model.records.Point;
 import model.util.RotationComparator;
+import org.nd4j.linalg.api.ndarray.INDArray;
+import org.nd4j.linalg.api.ops.impl.shape.Reshape;
+import org.nd4j.linalg.factory.Nd4j;
+
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
@@ -129,13 +133,19 @@ public class Polycube {
 
 
         boolean[][][] grid = new boolean[dx + 1][dy + 1][dz + 1];
+        //INDArray array = Nd4j.zeros(dx + 1,dy + 1, dz + 1);
 
         for (Cube cube : cubes) {
             int x = (cube.x() - minX);
             int y = (cube.y() - minY);
             int z = (cube.z() - minZ);
             grid[x][y][z] = true;
+
+            //array.putScalar(new int[]{x, y, z}, 1);
         }
+
+        //Nd4j.getExecutioner().calculateOutputShape(Reshape.builder("rotate"))
+
 
         return grid;
     }
