@@ -81,28 +81,7 @@ public class PolycubeRepository {
     }
 
     public synchronized void add(Polycube polycube) {
-        switch (polycube.getVolume()) {
-            case 1 -> monoCubes.add(polycube);
-            case 2 -> diCubes.add(polycube);
-            case 3 -> triCubes.add(polycube);
-            case 4 -> tetraCubes.add(polycube);
-            case 5 -> pentaCubes.add(polycube);
-            case 6 -> hexaCubes.add(polycube);
-            case 7 -> heptaCubes.add(polycube);
-            case 8 -> octaCubes.add(polycube);
-            case 9 -> nonaCubes.add(polycube);
-            case 10 -> decaCubes.add(polycube);
-            case 11 -> undecaCubes.add(polycube);
-            case 12 -> dodecaCubes.add(polycube);
-            case 13 -> tridecaCubes.add(polycube);
-            case 14 -> tetradecaCubes.add(polycube);
-            case 15 -> pentadecaCubes.add(polycube);
-            case 16 -> hexadecaCubes.add(polycube);
-            case 17 -> heptadecaCubes.add(polycube);
-            case 18 -> octadecaCubes.add(polycube);
-            case 19 -> nonadecaCubes.add(polycube);
-            case 20 -> icosiCubes.add(polycube);
-        }
+        this.getPolycubes(polycube.getVolume()).add(polycube);
     }
 
     public boolean exists(Polycube polycube) {
@@ -178,67 +157,12 @@ public class PolycubeRepository {
     public String toString() {
         StringBuilder s = new StringBuilder();
 
-        if (!monoCubes.isEmpty()) {
-            s.append(String.format("%-5s %d\n", "1", monoCubes.size()));
+        for(int i = 1; i <= 20; i++) {
+            Set<Polycube> polycubes = this.getPolycubes(i);
+            if(!polycubes.isEmpty()) {
+                s.append(String.format("%-5s %d\n", "1", polycubes.size()));
+            }
         }
-        if (!diCubes.isEmpty()) {
-            s.append(String.format("%-5s %d\n", "2", diCubes.size()));
-        }
-        if (!triCubes.isEmpty()) {
-            s.append(String.format("%-5s %d\n", "3", triCubes.size()));
-        }
-        if (!tetraCubes.isEmpty()) {
-            s.append(String.format("%-5s %d\n", "4", tetraCubes.size()));
-        }
-        if (!pentaCubes.isEmpty()) {
-            s.append(String.format("%-5s %d\n", "5", pentaCubes.size()));
-        }
-        if (!hexaCubes.isEmpty()) {
-            s.append(String.format("%-5s %d\n", "6", hexaCubes.size()));
-        }
-        if (!heptaCubes.isEmpty()) {
-            s.append(String.format("%-5s %d\n", "7", heptaCubes.size()));
-        }
-        if (!octaCubes.isEmpty()) {
-            s.append(String.format("%-5s %d\n", "8", octaCubes.size()));
-        }
-        if (!nonaCubes.isEmpty()) {
-            s.append(String.format("%-5s %d\n", "9", nonaCubes.size()));
-        }
-        if (!decaCubes.isEmpty()) {
-            s.append(String.format("%-5s %d\n", "10", decaCubes.size()));
-        }
-        if (!undecaCubes.isEmpty()) {
-            s.append(String.format("%-5s %d\n", "11", undecaCubes.size()));
-        }
-        if (!dodecaCubes.isEmpty()) {
-            s.append(String.format("%-5s %d\n", "12", dodecaCubes.size()));
-        }
-        if (!tridecaCubes.isEmpty()) {
-            s.append(String.format("%-5s %d\n", "13", tridecaCubes.size()));
-        }
-        if (!tetradecaCubes.isEmpty()) {
-            s.append(String.format("%-5s %d\n", "14", tetradecaCubes.size()));
-        }
-        if (!pentadecaCubes.isEmpty()) {
-            s.append(String.format("%-5s %d\n", "15", pentadecaCubes.size()));
-        }
-        if (!hexadecaCubes.isEmpty()) {
-            s.append(String.format("%-5s %d\n", "16", hexadecaCubes.size()));
-        }
-        if (!heptadecaCubes.isEmpty()) {
-            s.append(String.format("%-5s %d\n", "17", heptadecaCubes.size()));
-        }
-        if (!octadecaCubes.isEmpty()) {
-            s.append(String.format("%-5s %d\n", "18", octadecaCubes.size()));
-        }
-        if (!nonadecaCubes.isEmpty()) {
-            s.append(String.format("%-5s %d\n", "19", nonadecaCubes.size()));
-        }
-        if (!icosiCubes.isEmpty()) {
-            s.append(String.format("%-5s %d\n", "20", icosiCubes.size()));
-        }
-
         return s.toString();
     }
 

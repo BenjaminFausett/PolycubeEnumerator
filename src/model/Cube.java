@@ -46,7 +46,7 @@ public class Cube {
     @Override
     public int hashCode() {
         if (this.hashCode == 0) {
-            return (String.valueOf(manhattanDistancesSum) + euclideanDistancesSum).hashCode();
+            this.hashCode = (String.valueOf(manhattanDistancesSum) + euclideanDistancesSum).hashCode();
         }
         return this.hashCode;
     }
