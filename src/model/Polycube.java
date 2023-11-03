@@ -1,5 +1,6 @@
 package model;
 
+import config.Config;
 import model.records.Point;
 import model.util.PointFactory;
 import model.util.RotationComparator;
@@ -25,8 +26,7 @@ public class Polycube {
      * Creates a deep copy of the passed polycube
      */
     private Polycube(Polycube polycube) {
-        this.cubes = new ArrayList<>();
-        this.cubes.addAll(polycube.cubes);
+        this.cubes = new ArrayList<>(polycube.cubes);
     }
 
     /**
@@ -126,9 +126,27 @@ public class Polycube {
      */
     @Override
     public int hashCode() {
+        int manhattanDistancesSum = 0;
+        int euclideanDistancesHashSum = 0;
 
+        for (int i = 0; i < cubes.size(); i++) {
+            for (int j = i + 1; j < cubes.size(); j++) {
+                Point cube1 = cubes.get(i);
+                Point cube2 = cubes.get(j);
 
-        return 0;
+                int dx = Math.abs(cube1.x() - cube2.x());
+                int dy = Math.abs(cube1.y() - cube2.y());
+                int dz = Math.abs(cube1.z() - cube2.z());
+
+                int manhattanDistance = (dx + dy + dz);
+                double euclideanDistance = Math.sqrt((dx * dx) + (dy * dy) + (dz * dz));
+                int euclideanDistanceHash = Double.hashCode(Math.round(euclideanDistance * Config.DECIMAL_SCALING) / Config.DECIMAL_SCALING);
+
+                manhattanDistancesSum += manhattanDistance;
+                euclideanDistancesHashSum += euclideanDistanceHash;
+            }
+        }
+        return (manhattanDistancesSum + "" + euclideanDistancesHashSum).hashCode();
     }
 
     /**

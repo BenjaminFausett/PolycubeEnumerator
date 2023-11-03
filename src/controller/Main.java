@@ -1,7 +1,5 @@
 package controller;
 
-import config.Config;
-
 /**
  * This program calculates the number of permutations for a polycube of size n, resources permitting.
  *
@@ -10,6 +8,6 @@ import config.Config;
 public class Main {
 
     public static void main(String[] args) throws Exception {
-        PolycubeEnumerator.calculatePolycubes(9);
+        PolycubeEnumerator.calculatePolycubes(10);
     }
 }

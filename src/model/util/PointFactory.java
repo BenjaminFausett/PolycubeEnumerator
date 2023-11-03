@@ -4,6 +4,10 @@ import model.records.Point;
 
 import java.util.HashMap;
 
+
+/**
+ * The purpose of this class is to create, store, and fetch all needed point objects without ever creating duplicate points. This allows for a lower memory footprint.
+ */
 public class PointFactory {
 
     private abstract static class Holder {

@@ -5,6 +5,7 @@ import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
 import config.Config;
 import model.Polycube;
+import model.records.Point;
 
 import java.io.*;
 import java.nio.file.Files;
@@ -185,7 +186,7 @@ public class PolycubeRepository {
             kryo.register(HashSet.class);
             kryo.register(Polycube.class);
             kryo.register(ArrayList.class);
-            kryo.register(Cube.class);
+            kryo.register(Point.class);
             kryo.writeObject(output, this.getPolycubes(n));
             output.close();
         }
@@ -215,7 +216,7 @@ public class PolycubeRepository {
             kryo.register(HashSet.class);
             kryo.register(Polycube.class);
             kryo.register(ArrayList.class);
-            kryo.register(Cube.class);
+            kryo.register(Point.class);
 
             Input input = new Input(fileIn);
             Set<Polycube> polycubes = kryo.readObject(input, HashSet.class);

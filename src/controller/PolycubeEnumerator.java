@@ -36,9 +36,7 @@ public class PolycubeEnumerator {
                     Set<Point> points = polycube.getValidNewCubePoints();
                     points.forEach(point -> {
                         Polycube candidateCube = new Polycube(polycube, point);
-                        if (!polycubeRepository.exists(candidateCube)) {
-                            polycubeRepository.add(candidateCube);
-                        }
+                        polycubeRepository.add(candidateCube);
                     });
                 });
 
@@ -46,7 +44,7 @@ public class PolycubeEnumerator {
                 polycubeRepository.clearPolyCubes(i);
             }
 
-            HashSet<Polycube> polycubes = polycubeRepository.getPolycubes(n);
+            Set<Polycube> polycubes = polycubeRepository.getPolycubes(n);
             System.out.printf("%-5s %d%n", n, polycubes.size());
 
             if (Config.DEBUG_ON) {
