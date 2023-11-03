@@ -36,7 +36,10 @@ public class PolycubeEnumerator {
                     Set<Point> points = polycube.getValidNewCubePoints();
                     points.forEach(point -> {
                         Polycube candidateCube = new Polycube(polycube, point);
-                        polycubeRepository.add(candidateCube);
+                        if(!polycubeRepository.exists(candidateCube)) {
+                            polycubeRepository.add(candidateCube);
+                        }
+
                     });
                 });
 
