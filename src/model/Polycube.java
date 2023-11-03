@@ -1,27 +1,24 @@
 package model;
 
-import config.Config;
 import model.records.Point;
+import model.util.PointFactory;
 import model.util.RotationComparator;
-import org.nd4j.linalg.api.ndarray.INDArray;
-import org.nd4j.linalg.api.ops.impl.shape.Reshape;
-import org.nd4j.linalg.factory.Nd4j;
 
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 public class Polycube {
 
-    private final ArrayList<Cube> cubes;
+    private final ArrayList<Point> cubes;
 
     /**
      * Creates the one and only perfect MonoCube
      */
     public Polycube() {
+        PointFactory pointFactory = PointFactory.getInstance();
         this.cubes = new ArrayList<>();
-        this.cubes.add(new Cube());
+        this.cubes.add(pointFactory.get(64, 64, 64));
     }
 
     /**
@@ -29,9 +26,7 @@ public class Polycube {
      */
     private Polycube(Polycube polycube) {
         this.cubes = new ArrayList<>();
-        for (Cube cube : polycube.cubes) {
-            this.cubes.add(cube.clone());
-        }
+        this.cubes.addAll(polycube.cubes);
     }
 
     /**
@@ -61,46 +56,29 @@ public class Polycube {
      */
     public Set<Point> getValidNewCubePoints() {
         Set<Point> validPlacements = new HashSet<>();
+        PointFactory pointFactory = PointFactory.getInstance();
 
         cubes.forEach(cube -> {
-            validPlacements.add(new Point((cube.x() - 1), cube.y(), cube.z()));
-            validPlacements.add(new Point((cube.x() + 1), cube.y(), cube.z()));
+            validPlacements.add(pointFactory.get((cube.x() - 1), cube.y(), cube.z()));
+            validPlacements.add(pointFactory.get((cube.x() + 1), cube.y(), cube.z()));
 
-            validPlacements.add(new Point(cube.x(), (cube.y() - 1), cube.z()));
-            validPlacements.add(new Point(cube.x(), (cube.y() + 1), cube.z()));
+            validPlacements.add(pointFactory.get(cube.x(), (cube.y() - 1), cube.z()));
+            validPlacements.add(pointFactory.get(cube.x(), (cube.y() + 1), cube.z()));
 
-            validPlacements.add(new Point(cube.x(), cube.y(), (cube.z() - 1)));
-            validPlacements.add(new Point(cube.x(), cube.y(), (cube.z() + 1)));
+            validPlacements.add(pointFactory.get(cube.x(), cube.y(), (cube.z() - 1)));
+            validPlacements.add(pointFactory.get(cube.x(), cube.y(), (cube.z() + 1)));
         });
 
-        cubes.forEach(cube -> validPlacements.remove(new Point(cube.x(), cube.y(), cube.z())));
+        cubes.forEach(validPlacements::remove);
 
         return validPlacements;
     }
 
     /**
-     * Adds a cube to this polycube at the given point updates all cubes with the new manhattan and euclidean distances to each other cube
+     * Adds a cube to this polycube at the given point
      */
     private void addCube(Point point) {
-        Cube newCube = new Cube(point);
-
-        for (Cube cube : cubes) {
-            int dx = Math.abs(cube.x() - newCube.x());
-            int dy = Math.abs(cube.y() - newCube.y());
-            int dz = Math.abs(cube.z() - newCube.z());
-
-            int manhattanDistance = (dx + dy + dz);
-            double euclideanDistance = Math.sqrt((dx * dx) + (dy * dy) + (dz * dz));
-            int euclideanDistanceHash = Double.hashCode(Math.round(euclideanDistance * Config.DECIMAL_SCALING) / Config.DECIMAL_SCALING);
-
-            newCube.addManhattanDistance(manhattanDistance);
-            newCube.addEuclideanDistancesSum(euclideanDistanceHash);
-
-            cube.addManhattanDistance(manhattanDistance);
-            cube.addEuclideanDistancesSum(euclideanDistanceHash);
-        }
-
-        this.cubes.add(newCube);
+        this.cubes.add(point);
     }
 
     /**
@@ -116,7 +94,7 @@ public class Polycube {
         int maxZ = Integer.MIN_VALUE;
         int minZ = Integer.MAX_VALUE;
 
-        for (Cube cube : cubes) {
+        for (Point cube : cubes) {
             if (minX > cube.x()) minX = cube.x();
             if (maxX < cube.x()) maxX = cube.x();
 
@@ -131,21 +109,14 @@ public class Polycube {
         int dy = (maxY - minY);
         int dz = (maxZ - minZ);
 
-
         boolean[][][] grid = new boolean[dx + 1][dy + 1][dz + 1];
-        //INDArray array = Nd4j.zeros(dx + 1,dy + 1, dz + 1);
 
-        for (Cube cube : cubes) {
+        for (Point cube : cubes) {
             int x = (cube.x() - minX);
             int y = (cube.y() - minY);
             int z = (cube.z() - minZ);
             grid[x][y][z] = true;
-
-            //array.putScalar(new int[]{x, y, z}, 1);
         }
-
-        //Nd4j.getExecutioner().calculateOutputShape(Reshape.builder("rotate"))
-
 
         return grid;
     }
@@ -155,7 +126,9 @@ public class Polycube {
      */
     @Override
     public int hashCode() {
-        return cubes.stream().mapToInt(Cube::hashCode).sum();
+
+
+        return 0;
     }
 
     /**
@@ -165,13 +138,6 @@ public class Polycube {
     @Override
     public boolean equals(Object obj) {
         if (!(obj instanceof Polycube other)) {
-            return false;
-        }
-
-        Set<Integer> thisHashes = cubes.stream().map(Cube::hashCode).collect(Collectors.toSet());
-        Set<Integer> otherHashes = other.cubes.stream().map(Cube::hashCode).collect(Collectors.toSet());
-
-        if (!thisHashes.equals(otherHashes)) {
             return false;
         }
 
@@ -191,7 +157,7 @@ public class Polycube {
         sb.append("\n");
 
         int count = 1;
-        for (Cube cube : cubes) {
+        for (Point cube : cubes) {
             sb.append("\nCube ").append(count).append("/").append(this.cubes.size()).append(": ");
             sb.append("\n").append(cube.toString()).append("\n");
             count++;
