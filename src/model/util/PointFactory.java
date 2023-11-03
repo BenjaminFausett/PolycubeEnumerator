@@ -10,12 +10,7 @@ import java.util.HashMap;
  */
 public class PointFactory {
 
-    private abstract static class Holder {
-        private static final PointFactory POINT_FACTORY_INSTANCE = new PointFactory();
-    }
-
     private final HashMap<String, Point> allPoints;
-
 
     private PointFactory() {
         this.allPoints = new HashMap<>();
@@ -30,12 +25,16 @@ public class PointFactory {
         final Point point = allPoints.get(coordinateKey);
 
         if (point == null) {
-            final Point newPoint = new Point(x, y, z);
+            final Point newPoint = new Point((byte) x, (byte) y, (byte) z);
             allPoints.put(coordinateKey, newPoint);
 
             return newPoint;
         } else {
             return point;
         }
+    }
+
+    private abstract static class Holder {
+        private static final PointFactory POINT_FACTORY_INSTANCE = new PointFactory();
     }
 }

@@ -1,94 +1,85 @@
 package repository;
 
-import com.esotericsoftware.kryo.Kryo;
-import com.esotericsoftware.kryo.io.Input;
-import com.esotericsoftware.kryo.io.Output;
-import config.Config;
 import model.Polycube;
-import model.records.Point;
 
-import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.Arrays;
 import java.util.List;
-import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class PolycubeRepository {
 
-    private final HashSet<Polycube> monoCubes;    //1
-    private final HashSet<Polycube> diCubes;      //2
-    private final HashSet<Polycube> triCubes;     //3
-    private final HashSet<Polycube> tetraCubes;   //4
-    private final HashSet<Polycube> pentaCubes;   //5
-    private final HashSet<Polycube> hexaCubes;    //6
-    private final HashSet<Polycube> heptaCubes;   //7
-    private final HashSet<Polycube> octaCubes;    //8
-    private final HashSet<Polycube> nonaCubes;    //9
-    private final HashSet<Polycube> decaCubes;    //10
-    private final HashSet<Polycube> undecaCubes;  //11
-    private final HashSet<Polycube> dodecaCubes;  //12
-    private final HashSet<Polycube> tridecaCubes; //13
-    private final HashSet<Polycube> tetradecaCubes;//14
-    private final HashSet<Polycube> pentadecaCubes; //15
-    private final HashSet<Polycube> hexadecaCubes;  //16
-    private final HashSet<Polycube> heptadecaCubes; //17
-    private final HashSet<Polycube> octadecaCubes;  //18
-    private final HashSet<Polycube> nonadecaCubes;  //19
-    private final HashSet<Polycube> icosiCubes;     //20
-    private int largestCompletedN;
+    private final ConcurrentHashMap<Integer, List<Polycube>> monoCubes;    //1
+    private final ConcurrentHashMap<Integer, List<Polycube>> diCubes;      //2
+    private final ConcurrentHashMap<Integer, List<Polycube>> triCubes;     //3
+    private final ConcurrentHashMap<Integer, List<Polycube>> tetraCubes;   //4
+    private final ConcurrentHashMap<Integer, List<Polycube>> pentaCubes;   //5
+    private final ConcurrentHashMap<Integer, List<Polycube>> hexaCubes;    //6
+    private final ConcurrentHashMap<Integer, List<Polycube>> heptaCubes;   //7
+    private final ConcurrentHashMap<Integer, List<Polycube>> octaCubes;    //8
+    private final ConcurrentHashMap<Integer, List<Polycube>> nonaCubes;    //9
+    private final ConcurrentHashMap<Integer, List<Polycube>> decaCubes;    //10
+    private final ConcurrentHashMap<Integer, List<Polycube>> undecaCubes;  //11
+    private final ConcurrentHashMap<Integer, List<Polycube>> dodecaCubes;  //12
+    private final ConcurrentHashMap<Integer, List<Polycube>> tridecaCubes; //13
+    private final ConcurrentHashMap<Integer, List<Polycube>> tetradecaCubes;//14
+    private final ConcurrentHashMap<Integer, List<Polycube>> pentadecaCubes; //15
+    private final ConcurrentHashMap<Integer, List<Polycube>> hexadecaCubes;  //16
+    private final ConcurrentHashMap<Integer, List<Polycube>> heptadecaCubes; //17
+    private final ConcurrentHashMap<Integer, List<Polycube>> octadecaCubes;  //18
+    private final ConcurrentHashMap<Integer, List<Polycube>> nonadecaCubes;  //19
+    private final ConcurrentHashMap<Integer, List<Polycube>> icosiCubes;     //20
 
-    public PolycubeRepository() throws IOException {
-        monoCubes = new HashSet<>();
-        diCubes = new HashSet<>();
-        triCubes = new HashSet<>();
-        tetraCubes = new HashSet<>();
-        pentaCubes = new HashSet<>();
-        hexaCubes = new HashSet<>();
-        heptaCubes = new HashSet<>();
-        octaCubes = new HashSet<>();
-        nonaCubes = new HashSet<>();
-        decaCubes = new HashSet<>();
-        undecaCubes = new HashSet<>();
-        dodecaCubes = new HashSet<>();
-        tridecaCubes = new HashSet<>();
-        tetradecaCubes = new HashSet<>();
-        pentadecaCubes = new HashSet<>();
-        hexadecaCubes = new HashSet<>();
-        heptadecaCubes = new HashSet<>();
-        octadecaCubes = new HashSet<>();
-        nonadecaCubes = new HashSet<>();
-        icosiCubes = new HashSet<>();
+    public PolycubeRepository() {
+        monoCubes = new ConcurrentHashMap<>();
+        diCubes = new ConcurrentHashMap<>();
+        triCubes = new ConcurrentHashMap<>();
+        tetraCubes = new ConcurrentHashMap<>();
+        pentaCubes = new ConcurrentHashMap<>();
+        hexaCubes = new ConcurrentHashMap<>();
+        heptaCubes = new ConcurrentHashMap<>();
+        octaCubes = new ConcurrentHashMap<>();
+        nonaCubes = new ConcurrentHashMap<>();
+        decaCubes = new ConcurrentHashMap<>();
+        undecaCubes = new ConcurrentHashMap<>();
+        dodecaCubes = new ConcurrentHashMap<>();
+        tridecaCubes = new ConcurrentHashMap<>();
+        tetradecaCubes = new ConcurrentHashMap<>();
+        pentadecaCubes = new ConcurrentHashMap<>();
+        hexadecaCubes = new ConcurrentHashMap<>();
+        heptadecaCubes = new ConcurrentHashMap<>();
+        octadecaCubes = new ConcurrentHashMap<>();
+        nonadecaCubes = new ConcurrentHashMap<>();
+        icosiCubes = new ConcurrentHashMap<>();
 
-        this.loadBackup();
+        Polycube monoCube = new Polycube();
+        ArrayList<Polycube> monoCubeList = new ArrayList<>();
+        monoCubeList.add(monoCube);
+        monoCubes.put(monoCube.hashCode(), monoCubeList);
     }
 
-    public static void printBackupFileSizes() throws Exception {
-        int n = 1;
-        while (Files.exists(Paths.get(n + "_cubes.ser")) && n > 0) {
-            FileInputStream fileIn = new FileInputStream(n + "_cubes.ser");
-            ObjectInputStream in = new ObjectInputStream(fileIn);
-            List<Polycube> polycubes = (List<Polycube>) in.readObject();
+    public void addIfUnique(Polycube polycube) {
+        int key = polycube.hashCode();
 
-            System.out.printf("%-5s %d%n", n, polycubes.size());
-
-            in.close();
-            fileIn.close();
-            n++;
-        }
+        this.getPolycubeMap(polycube.getVolume()).compute(key, (k, polycubeList) -> {
+            if (polycubeList == null) {
+                polycubeList = new ArrayList<>();
+                polycubeList.add(polycube);
+            } else {//todo i might be able to do all the rotations here, and after each rotation check it against all polycubes already in the list. that would remove redoing the rotation when comparing the insert poly to the saved polys
+                if (polycubeList.stream().noneMatch(polycube::equals)) {
+                    polycubeList.add(polycube);
+                }
+            }
+            return polycubeList;
+        });
     }
 
-    public synchronized void add(Polycube polycube) {
-        this.getPolycubes(polycube.getVolume()).add(polycube);
+    public List<Polycube> getPolycubes(int n) {
+        return this.getPolycubeMap(n).values().stream().flatMap(List::stream).toList();
     }
 
-    public boolean exists(Polycube polycube) {
-        return this.getPolycubes(polycube.getVolume()).contains(polycube);
-    }
-
-    public HashSet<Polycube> getPolycubes(int n) {
+    private ConcurrentHashMap<Integer, List<Polycube>> getPolycubeMap(int n) {
         switch (n) {
             case 1 -> {
                 return monoCubes;
@@ -151,129 +142,22 @@ public class PolycubeRepository {
                 return icosiCubes;
             }
         }
-        return null;
+        return new ConcurrentHashMap<>();
     }
 
     public String toString() {
         StringBuilder s = new StringBuilder();
 
-        for(int i = 1; i <= 20; i++) {
-            Set<Polycube> polycubes = this.getPolycubes(i);
-            if(!polycubes.isEmpty()) {
+        for (int i = 1; i <= 20; i++) {
+            List<Polycube> polycubes = this.getPolycubes(i);
+            if (!polycubes.isEmpty()) {
                 s.append(String.format("%-5s %d\n", "1", polycubes.size()));
             }
         }
         return s.toString();
     }
 
-    public int getLargestCompletedN() {
-        return largestCompletedN;
-    }
-
-    public void backupPolyCubes(int n) throws IOException {
-        if (!Config.SAVE_TO_CACHE) {
-            return;
-        }
-        System.out.println("Started saving cache of cube size n = " + n);
-
-        String filename = "polycube cache/cubes" + n + ".bin";
-
-        new File("polycube cache").mkdirs();
-
-        if (Files.notExists(Path.of(filename))) {
-            Output output = new Output(new FileOutputStream(filename));
-            Kryo kryo = new Kryo();
-            kryo.register(HashSet.class);
-            kryo.register(Polycube.class);
-            kryo.register(ArrayList.class);
-            kryo.register(Point.class);
-            kryo.writeObject(output, this.getPolycubes(n));
-            output.close();
-        }
-
-        System.out.println("Finished saving cache of cube size n = " + n);
-    }
-
-    private void loadBackup() throws IOException {
-        int n = 20;
-        while (Files.notExists(Paths.get("polycube cache/cubes" + n + ".bin")) && n > 0) {
-            n--;
-        }
-
-        if (n == 0 || !Config.LOAD_FROM_CACHE) {//no backup so starting from 1. ill be a pal and generate all the cubes for n = 1 for you
-            Polycube monoCube = new Polycube();
-            monoCubes.add(monoCube);
-            largestCompletedN = 1;
-            return;
-        }
-        System.out.println("Found cache of cube size n = " + n);
-
-        this.largestCompletedN = n;
-
-        try {
-            FileInputStream fileIn = new FileInputStream("polycube cache/cubes" + n + ".bin");
-            Kryo kryo = new Kryo();
-            kryo.register(HashSet.class);
-            kryo.register(Polycube.class);
-            kryo.register(ArrayList.class);
-            kryo.register(Point.class);
-
-            Input input = new Input(fileIn);
-            Set<Polycube> polycubes = kryo.readObject(input, HashSet.class);
-
-            input.close();
-            fileIn.close();
-
-            switch (n) {
-                case 1 -> monoCubes.addAll(polycubes);
-                case 2 -> diCubes.addAll(polycubes);
-                case 3 -> triCubes.addAll(polycubes);
-                case 4 -> tetraCubes.addAll(polycubes);
-                case 5 -> pentaCubes.addAll(polycubes);
-                case 6 -> hexaCubes.addAll(polycubes);
-                case 7 -> heptaCubes.addAll(polycubes);
-                case 8 -> octaCubes.addAll(polycubes);
-                case 9 -> nonaCubes.addAll(polycubes);
-                case 10 -> decaCubes.addAll(polycubes);
-                case 11 -> undecaCubes.addAll(polycubes);
-                case 12 -> dodecaCubes.addAll(polycubes);
-                case 13 -> tridecaCubes.addAll(polycubes);
-                case 14 -> tetradecaCubes.addAll(polycubes);
-                case 15 -> pentadecaCubes.addAll(polycubes);
-                case 16 -> hexadecaCubes.addAll(polycubes);
-                case 17 -> heptadecaCubes.addAll(polycubes);
-                case 18 -> octadecaCubes.addAll(polycubes);
-                case 19 -> nonadecaCubes.addAll(polycubes);
-                case 20 -> icosiCubes.addAll(polycubes);
-            }
-            System.out.println("Loaded cache of cube size n = " + n);
-        } catch (IOException e) {
-            throw e;
-        }
-    }
-
     public void clearPolyCubes(int n) {
-        switch (n) {
-            case 1 -> monoCubes.clear();
-            case 2 -> diCubes.clear();
-            case 3 -> triCubes.clear();
-            case 4 -> tetraCubes.clear();
-            case 5 -> pentaCubes.clear();
-            case 6 -> hexaCubes.clear();
-            case 7 -> heptaCubes.clear();
-            case 8 -> octaCubes.clear();
-            case 9 -> nonaCubes.clear();
-            case 10 -> decaCubes.clear();
-            case 11 -> undecaCubes.clear();
-            case 12 -> dodecaCubes.clear();
-            case 13 -> tridecaCubes.clear();
-            case 14 -> tetradecaCubes.clear();
-            case 15 -> pentadecaCubes.clear();
-            case 16 -> hexadecaCubes.clear();
-            case 17 -> heptadecaCubes.clear();
-            case 18 -> octadecaCubes.clear();
-            case 19 -> nonadecaCubes.clear();
-            case 20 -> icosiCubes.clear();
-        }
+        this.getPolycubeMap(n).clear();
     }
 }

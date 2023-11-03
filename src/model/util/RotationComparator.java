@@ -13,7 +13,7 @@ public class RotationComparator {
     }
 
     private static boolean rotationallyEquals(boolean[][][] grid1, boolean[][][] grid2) {
-        if(Arrays.deepEquals(grid1, grid2)) {
+        if (Arrays.deepEquals(grid1, grid2)) {
             return true;
         }
         for (int x = 0; x < 2; x++) {
