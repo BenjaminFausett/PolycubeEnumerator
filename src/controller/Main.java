@@ -1,13 +1,13 @@
 package controller;
 
 /**
- * This program calculates the number of permutations for a polycube of size n, resources permitting.
+ * This program calculates the number of permutations of a polycubes made up of n cubes, resources permitting.
  *
  * @author Benjamin Fausett
  */
 public class Main {
 
-    public static void main(String[] args) throws Exception {
-        PolycubeEnumerator.calculatePolycubes(11);
+    public static void main(String[] args) {
+        PolycubeEnumerator.calculatePolycubes(12);
     }
 }

@@ -1,10 +1,9 @@
 package repository;
 
 import model.Polycube;
+import model.util.PolycubeComparator;
 
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -59,16 +58,16 @@ public class PolycubeRepository {
         monoCubes.put(monoCube.hashCode(), monoCubeList);
     }
 
-    public void addIfUnique(Polycube polycube) {
-        int key = polycube.hashCode();
+    public void addIfUnique(Polycube candidatePolycube) {
+        int key = candidatePolycube.hashCode();
 
-        this.getPolycubeMap(polycube.getVolume()).compute(key, (k, polycubeList) -> {
+        this.getPolycubeMap(candidatePolycube.getVolume()).compute(key, (k, polycubeList) -> {
             if (polycubeList == null) {
                 polycubeList = new ArrayList<>();
-                polycubeList.add(polycube);
-            } else {//todo i might be able to do all the rotations here, and after each rotation check it against all polycubes already in the list. that would remove redoing the rotation when comparing the insert poly to the saved polys
-                if (polycubeList.stream().noneMatch(polycube::equals)) {
-                    polycubeList.add(polycube);
+                polycubeList.add(candidatePolycube);
+            } else {
+                if (!PolycubeComparator.equalsAny(candidatePolycube, polycubeList)) {
+                    polycubeList.add(candidatePolycube);
                 }
             }
             return polycubeList;

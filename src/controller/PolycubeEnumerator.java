@@ -2,10 +2,9 @@ package controller;
 
 import config.Config;
 import model.Polycube;
-import model.records.Point;
+import model.records.Cube;
 import repository.PolycubeRepository;
 
-import java.io.IOException;
 import java.text.DecimalFormat;
 import java.time.Duration;
 import java.time.Instant;
@@ -15,7 +14,7 @@ import java.util.stream.Collectors;
 
 public class PolycubeEnumerator {
 
-    public static void calculatePolycubes(int n) throws IOException {
+    public static void calculatePolycubes(int n) {
         Instant start = Instant.now();
         PolycubeRepository polycubeRepository = new PolycubeRepository();
 
@@ -25,9 +24,9 @@ public class PolycubeEnumerator {
             System.out.printf("%-5s %d%n", i, polycubes.size());
 
             polycubes.parallelStream().forEach(polycube -> {
-                Set<Point> points = polycube.getValidNewCubePoints();
-                points.forEach(point -> {
-                    Polycube candidateCube = new Polycube(polycube, point);
+                Set<Cube> cubes = polycube.getValidCubesToAdd();
+                cubes.forEach(cube -> {
+                    Polycube candidateCube = new Polycube(polycube, cube);
                     polycubeRepository.addIfUnique(candidateCube);
 
                 });

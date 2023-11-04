@@ -29,7 +29,7 @@ n	translation 	3-d rotation    4-d rotation
 11    1279537
 12    9371094
 
-n = 12 finished in 71.0s
+n = 12 finished in 54.7s
 
 http://kevingong.com/Polyominoes/Enumeration.html
 https://github.com/mikepound/cubes/issues/23
