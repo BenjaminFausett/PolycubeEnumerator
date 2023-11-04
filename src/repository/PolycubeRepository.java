@@ -9,26 +9,26 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class PolycubeRepository {
 
-    private final ConcurrentHashMap<Integer, List<Polycube>> monoCubes;    //1
-    private final ConcurrentHashMap<Integer, List<Polycube>> diCubes;      //2
-    private final ConcurrentHashMap<Integer, List<Polycube>> triCubes;     //3
-    private final ConcurrentHashMap<Integer, List<Polycube>> tetraCubes;   //4
-    private final ConcurrentHashMap<Integer, List<Polycube>> pentaCubes;   //5
-    private final ConcurrentHashMap<Integer, List<Polycube>> hexaCubes;    //6
-    private final ConcurrentHashMap<Integer, List<Polycube>> heptaCubes;   //7
-    private final ConcurrentHashMap<Integer, List<Polycube>> octaCubes;    //8
-    private final ConcurrentHashMap<Integer, List<Polycube>> nonaCubes;    //9
-    private final ConcurrentHashMap<Integer, List<Polycube>> decaCubes;    //10
-    private final ConcurrentHashMap<Integer, List<Polycube>> undecaCubes;  //11
-    private final ConcurrentHashMap<Integer, List<Polycube>> dodecaCubes;  //12
-    private final ConcurrentHashMap<Integer, List<Polycube>> tridecaCubes; //13
-    private final ConcurrentHashMap<Integer, List<Polycube>> tetradecaCubes;//14
-    private final ConcurrentHashMap<Integer, List<Polycube>> pentadecaCubes; //15
-    private final ConcurrentHashMap<Integer, List<Polycube>> hexadecaCubes;  //16
-    private final ConcurrentHashMap<Integer, List<Polycube>> heptadecaCubes; //17
-    private final ConcurrentHashMap<Integer, List<Polycube>> octadecaCubes;  //18
-    private final ConcurrentHashMap<Integer, List<Polycube>> nonadecaCubes;  //19
-    private final ConcurrentHashMap<Integer, List<Polycube>> icosiCubes;     //20
+    private final ConcurrentHashMap<Long, List<Polycube>> monoCubes;    //1
+    private final ConcurrentHashMap<Long, List<Polycube>> diCubes;      //2
+    private final ConcurrentHashMap<Long, List<Polycube>> triCubes;     //3
+    private final ConcurrentHashMap<Long, List<Polycube>> tetraCubes;   //4
+    private final ConcurrentHashMap<Long, List<Polycube>> pentaCubes;   //5
+    private final ConcurrentHashMap<Long, List<Polycube>> hexaCubes;    //6
+    private final ConcurrentHashMap<Long, List<Polycube>> heptaCubes;   //7
+    private final ConcurrentHashMap<Long, List<Polycube>> octaCubes;    //8
+    private final ConcurrentHashMap<Long, List<Polycube>> nonaCubes;    //9
+    private final ConcurrentHashMap<Long, List<Polycube>> decaCubes;    //10
+    private final ConcurrentHashMap<Long, List<Polycube>> undecaCubes;  //11
+    private final ConcurrentHashMap<Long, List<Polycube>> dodecaCubes;  //12
+    private final ConcurrentHashMap<Long, List<Polycube>> tridecaCubes; //13
+    private final ConcurrentHashMap<Long, List<Polycube>> tetradecaCubes;//14
+    private final ConcurrentHashMap<Long, List<Polycube>> pentadecaCubes; //15
+    private final ConcurrentHashMap<Long, List<Polycube>> hexadecaCubes;  //16
+    private final ConcurrentHashMap<Long, List<Polycube>> heptadecaCubes; //17
+    private final ConcurrentHashMap<Long, List<Polycube>> octadecaCubes;  //18
+    private final ConcurrentHashMap<Long, List<Polycube>> nonadecaCubes;  //19
+    private final ConcurrentHashMap<Long, List<Polycube>> icosiCubes;     //20
 
     public PolycubeRepository() {
         monoCubes = new ConcurrentHashMap<>();
@@ -55,11 +55,11 @@ public class PolycubeRepository {
         Polycube monoCube = new Polycube();
         ArrayList<Polycube> monoCubeList = new ArrayList<>();
         monoCubeList.add(monoCube);
-        monoCubes.put(monoCube.hashCode(), monoCubeList);
+        monoCubes.put(monoCube.longHashCode(), monoCubeList);
     }
 
     public void addIfUnique(Polycube candidatePolycube) {
-        int key = candidatePolycube.hashCode();
+        long key = candidatePolycube.longHashCode();
 
         this.getPolycubeMap(candidatePolycube.getVolume()).compute(key, (k, polycubeList) -> {
             if (polycubeList == null) {
@@ -78,7 +78,7 @@ public class PolycubeRepository {
         return this.getPolycubeMap(n).values().stream().flatMap(List::stream).toList();
     }
 
-    private ConcurrentHashMap<Integer, List<Polycube>> getPolycubeMap(int n) {
+    public ConcurrentHashMap<Long, List<Polycube>> getPolycubeMap(int n) {
         switch (n) {
             case 1 -> {
                 return monoCubes;
@@ -144,6 +144,11 @@ public class PolycubeRepository {
         return new ConcurrentHashMap<>();
     }
 
+    public void clearPolyCubes(int n) {
+        this.getPolycubeMap(n).clear();
+    }
+
+    @Override
     public String toString() {
         StringBuilder s = new StringBuilder();
 
@@ -154,9 +159,5 @@ public class PolycubeRepository {
             }
         }
         return s.toString();
-    }
-
-    public void clearPolyCubes(int n) {
-        this.getPolycubeMap(n).clear();
     }
 }

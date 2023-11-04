@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * This class does the slow but necessary true equality check between two polycubes via translation, rotation, and reflection
+ * This class does the slow but necessary true equality check between two polycubes via translation, rotation, and reflection.
  */
 public class PolycubeComparator {
 

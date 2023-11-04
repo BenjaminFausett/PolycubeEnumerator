@@ -8,6 +8,6 @@ package controller;
 public class Main {
 
     public static void main(String[] args) {
-        PolycubeEnumerator.calculatePolycubes(12);
+        PolycubeEnumerator.calculatePolycubes(13);
     }
 }

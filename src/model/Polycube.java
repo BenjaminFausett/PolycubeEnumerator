@@ -79,16 +79,14 @@ public class Polycube {
         return this.cubes;
     }
 
-    @Override
-    public int hashCode() {
-        int manhattanDistancesSum = 0;
-        int euclideanDistancesHashSum = 0;
+    public long longHashCode() {
+        long hashCodeSum = 0;
 
-        for (int i = 0; i < cubes.size(); i++) {
-            for (int j = i + 1; j < cubes.size(); j++) {
-                Cube cube1 = cubes.get(i);
-                Cube cube2 = cubes.get(j);
+        for (Cube cube1 : cubes) {
+            int manhattanDistanceSum = 0;
+            int euclideanDistanceHashSum = 0;
 
+            for (Cube cube2 : cubes) {
                 int dx = Math.abs(cube1.x() - cube2.x());
                 int dy = Math.abs(cube1.y() - cube2.y());
                 int dz = Math.abs(cube1.z() - cube2.z());
@@ -97,11 +95,12 @@ public class Polycube {
                 double euclideanDistance = Math.sqrt((dx * dx) + (dy * dy) + (dz * dz));
                 int euclideanDistanceHash = Double.hashCode(Math.round(euclideanDistance * Config.DECIMAL_SCALING) / Config.DECIMAL_SCALING);
 
-                manhattanDistancesSum += manhattanDistance;
-                euclideanDistancesHashSum += euclideanDistanceHash;
+                manhattanDistanceSum += manhattanDistance;
+                euclideanDistanceHashSum += euclideanDistanceHash;
             }
+            hashCodeSum += (String.valueOf(manhattanDistanceSum) + euclideanDistanceHashSum).hashCode();
         }
-        return (manhattanDistancesSum + "" + euclideanDistancesHashSum).hashCode();
+        return hashCodeSum;
     }
 
     @Override

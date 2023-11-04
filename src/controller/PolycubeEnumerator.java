@@ -10,7 +10,6 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 public class PolycubeEnumerator {
 
@@ -39,9 +38,9 @@ public class PolycubeEnumerator {
         System.out.printf("%-5s %d%n", n, polycubes.size());
 
         if (Config.DEBUG_ON) {
-            Set<Integer> hashes = polycubes.stream().map(Polycube::hashCode).collect(Collectors.toSet());
+            int hashCount = polycubeRepository.getPolycubeMap(n).keySet().size();
 
-            double collisionRate = (1 - ((double) hashes.size() / polycubes.size())) * 100;
+            double collisionRate = (1 - ((double) hashCount / polycubes.size())) * 100;
 
             DecimalFormat formatter = new DecimalFormat("#.###");
             System.out.println("Hash Collision Rate: " + formatter.format(collisionRate) + "%");
