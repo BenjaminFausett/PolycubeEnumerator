@@ -8,6 +8,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+/**
+ * This class does the slow but necessary true equality check between two polycubes via translation, rotation, and reflection
+ */
 public class PolycubeComparator {
 
     /**
@@ -43,6 +46,10 @@ public class PolycubeComparator {
         return false;
     }
 
+
+    /**
+     * Performs a translation of the coordinates to shift the represented polycubes corner to 0, 0, 0
+     */
     private static Set<Cube> normalize(List<Cube> cubes) {
         int minX = Integer.MAX_VALUE;
         int minY = Integer.MAX_VALUE;

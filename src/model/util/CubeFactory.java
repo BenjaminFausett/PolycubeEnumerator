@@ -6,7 +6,6 @@ import model.records.Cube;
 /**
  * The purpose of this class is to create, store, and fetch all needed cube objects without ever creating duplicate coordinates. This allows for a lower memory footprint.
  */
-
 public class CubeFactory {
 
     private final static byte MAX_RANGE = 36;
