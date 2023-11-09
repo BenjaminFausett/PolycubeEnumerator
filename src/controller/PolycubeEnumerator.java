@@ -2,7 +2,7 @@ package controller;
 
 import config.Config;
 import model.Polycube;
-import model.records.Cube;
+import model.records.Point3D;
 import repository.PolycubeRepository;
 
 import java.text.DecimalFormat;
@@ -23,11 +23,10 @@ public class PolycubeEnumerator {
             System.out.printf("%-5s %d%n", i, polycubes.size());
 
             polycubes.parallelStream().forEach(polycube -> {
-                Set<Cube> cubes = polycube.getValidCubesToAdd();
-                cubes.forEach(cube -> {
-                    Polycube candidateCube = new Polycube(polycube, cube);
+                Set<Point3D> points = polycube.getValidCubesToAdd();
+                points.forEach(point -> {
+                    Polycube candidateCube = new Polycube(polycube, point);
                     polycubeRepository.addIfUnique(candidateCube);
-
                 });
             });
 
@@ -44,6 +43,10 @@ public class PolycubeEnumerator {
 
             DecimalFormat formatter = new DecimalFormat("#.###");
             System.out.println("Hash Collision Rate: " + formatter.format(collisionRate) + "%");
+            System.out.println("Hash Collision Count: " + (polycubes.size() - hashCount));
+            System.out.println("Unique keys: " + hashCount);
+
+            polycubeRepository.getPolycubeMap(n).values().stream().filter(list -> list.size() > 1).findFirst().ifPresent(System.out::println);
         }
 
 
