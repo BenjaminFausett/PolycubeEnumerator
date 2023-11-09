@@ -1,5 +1,7 @@
 package model;
 
+import com.github.quickhull3d.Point3d;
+import com.github.quickhull3d.QuickHull3D;
 import config.Config;
 import model.records.Cube;
 import model.records.Point3D;
@@ -257,6 +259,24 @@ public class Polycube {
         return !cubes.contains(new Cube(cube.x() + dx, cube.y() + dy, cube.z() + dz));
     }
 
+    private String getHullFaces() {
+        QuickHull3D quickHull = new QuickHull3D();
+        Point3d[] points = new Point3d[cubes.size()];
+
+        for(int i = 0; i < cubes.size(); i++) {
+            Cube cube = cubes.get(i);
+            points[i] = new Point3d(cube.x(), cube.y(), cube.z());
+        }
+        try {
+            quickHull.build(points);
+            //quickHull.getVertices() todo maybe i can do something with this data too
+
+            return quickHull.getNumFaces() + "_" + quickHull.getNumVertices();
+        } catch(Exception ignore) {
+            return " ";
+        }
+    }
+
     public double getCenterDistance() {//distance from center of mass to center of bounding box
         double sumX = 0;
         double sumY = 0;
@@ -314,6 +334,9 @@ public class Polycube {
 
         s += longHashCode();
         s += getViewableFacesPerLayer();
+        if(cubes.size() > 5) {
+            s += getHullFaces();
+        }
         //s += getBensNumbers();
         //s += getNeighborCounts();
         //s += getCenterDistance();
