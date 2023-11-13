@@ -6,6 +6,7 @@ import config.Config;
 import model.records.Cube;
 import model.records.Point3D;
 import model.records.VisibleFaces;
+import model.records.VisibleFaces2;
 
 import java.util.*;
 
@@ -170,7 +171,8 @@ public class Polycube {
         return strings.toString();
     }
 
-    public String getViewableFacesPerLayer() {
+    public String getViewableFacesPerLayer() { //if i could get the VisibleFaces object to include the largest number of how many of the cubes on the layer are connected to eachother, then i would get past the porygon cube.
+        // i dont know how to do it but im sure it can be done, its probalby just doing to be slow as hell, but dont worry about speed right now, if i make the perfect string, then i can work on speed.
         TreeMap<Integer, Integer> visibleFaceMapPosX = new TreeMap<>();
         TreeMap<Integer, Integer> visibleFaceMapNegX = new TreeMap<>();
         TreeMap<Integer, Integer> visibleFaceMapPosY = new TreeMap<>();
@@ -226,13 +228,142 @@ public class Polycube {
         }
 
         ArrayList<String> stringList = new ArrayList<>();
+        ArrayList<String> stringListX = new ArrayList<>();
+        ArrayList<String> stringListY = new ArrayList<>();
+        ArrayList<String> stringListZ = new ArrayList<>();
 
-        stringList.add(getCanonicalVisibleFacesString(visibleFacePosX));
-        stringList.add(getCanonicalVisibleFacesString(visibleFaceNegX));
-        stringList.add(getCanonicalVisibleFacesString(visibleFacePosY));
-        stringList.add(getCanonicalVisibleFacesString(visibleFaceNegY));
-        stringList.add(getCanonicalVisibleFacesString(visibleFacePosZ));
-        stringList.add(getCanonicalVisibleFacesString(visibleFaceNegZ));
+        stringListX.add(getCanonicalVisibleFacesString(visibleFacePosX));
+        stringListX.add(getCanonicalVisibleFacesString(visibleFaceNegX));
+        stringListY.add(getCanonicalVisibleFacesString(visibleFacePosY));
+        stringListY.add(getCanonicalVisibleFacesString(visibleFaceNegY));
+        stringListZ.add(getCanonicalVisibleFacesString(visibleFacePosZ));
+        stringListZ.add(getCanonicalVisibleFacesString(visibleFaceNegZ));
+
+        Collections.sort(stringListX);
+        Collections.sort(stringListY);
+        Collections.sort(stringListZ);
+
+        stringList.add(stringListX.toString());
+        stringList.add(stringListY.toString());
+        stringList.add(stringListZ.toString());
+
+        Collections.sort(stringList);
+
+        return stringList.toString();
+    }
+
+    public String getViewableFacesPerLayer2() {
+        TreeMap<Integer, ViewableFacesLayer> visibleFaceMapPosX = new TreeMap<>();
+        TreeMap<Integer, ViewableFacesLayer> visibleFaceMapNegX = new TreeMap<>();
+        TreeMap<Integer, ViewableFacesLayer> visibleFaceMapPosY = new TreeMap<>();
+        TreeMap<Integer, ViewableFacesLayer> visibleFaceMapNegY = new TreeMap<>();
+        TreeMap<Integer, ViewableFacesLayer> visibleFaceMapPosZ = new TreeMap<>();
+        TreeMap<Integer, ViewableFacesLayer> visibleFaceMapNegZ = new TreeMap<>();
+
+        for (Cube cube : cubes) {
+            if (isNeighborEmpty(cube, 1, 0, 0)) {
+                if(visibleFaceMapPosX.containsKey(cube.x())) {
+                    visibleFaceMapPosX.get(cube.x()).addVisibleFace(cube.y(), cube.z());
+                } else {
+                    ViewableFacesLayer layer = new ViewableFacesLayer();
+                    layer.addVisibleFace(cube.y(), cube.z());
+                    visibleFaceMapPosX.put(cube.x(), layer);
+                }
+            }
+            if (isNeighborEmpty(cube, -1, 0, 0)) {
+                if(visibleFaceMapNegX.containsKey(cube.x())) {
+                    visibleFaceMapNegX.get(cube.x()).addVisibleFace(cube.y(), cube.z());
+                } else {
+                    ViewableFacesLayer layer = new ViewableFacesLayer();
+                    layer.addVisibleFace(cube.y(), cube.z());
+                    visibleFaceMapNegX.put(cube.x(), layer);
+                }
+            }
+
+            if (isNeighborEmpty(cube, 0, 1, 0)) {
+                if(visibleFaceMapPosY.containsKey(cube.y())) {
+                    visibleFaceMapPosY.get(cube.y()).addVisibleFace(cube.x(), cube.z());
+                } else {
+                    ViewableFacesLayer layer = new ViewableFacesLayer();
+                    layer.addVisibleFace(cube.x(), cube.z());
+                    visibleFaceMapPosY.put(cube.y(), layer);
+                }
+            }
+            if (isNeighborEmpty(cube, 0, -1, 0)) {
+                if(visibleFaceMapNegY.containsKey(cube.y())) {
+                    visibleFaceMapNegY.get(cube.y()).addVisibleFace(cube.x(), cube.z());
+                } else {
+                    ViewableFacesLayer layer = new ViewableFacesLayer();
+                    layer.addVisibleFace(cube.x(), cube.z());
+                    visibleFaceMapNegY.put(cube.y(), layer);
+                }
+            }
+
+            if (isNeighborEmpty(cube, 0, 0, 1)) {
+                if(visibleFaceMapPosZ.containsKey(cube.z())) {
+                    visibleFaceMapPosZ.get(cube.z()).addVisibleFace(cube.x(), cube.y());
+                } else {
+                    ViewableFacesLayer layer = new ViewableFacesLayer();
+                    layer.addVisibleFace(cube.x(), cube.y());
+                    visibleFaceMapPosZ.put(cube.z(), layer);
+                }
+            }
+            if (isNeighborEmpty(cube, 0, 0, -1)) {
+                if(visibleFaceMapNegZ.containsKey(cube.z())) {
+                    visibleFaceMapNegZ.get(cube.z()).addVisibleFace(cube.x(), cube.y());
+                } else {
+                    ViewableFacesLayer layer = new ViewableFacesLayer();
+                    layer.addVisibleFace(cube.x(), cube.y());
+                    visibleFaceMapNegZ.put(cube.z(), layer);
+                }
+            }
+        }
+
+        ArrayList<VisibleFaces2> visibleFacePosX = new ArrayList<>();
+        ArrayList<VisibleFaces2> visibleFaceNegX = new ArrayList<>();
+        ArrayList<VisibleFaces2> visibleFacePosY = new ArrayList<>();
+        ArrayList<VisibleFaces2> visibleFaceNegY = new ArrayList<>();
+        ArrayList<VisibleFaces2> visibleFacePosZ = new ArrayList<>();
+        ArrayList<VisibleFaces2> visibleFaceNegZ = new ArrayList<>();
+
+        for (Map.Entry<Integer, ViewableFacesLayer> entry : visibleFaceMapPosX.entrySet()) {
+            visibleFacePosX.add(new VisibleFaces2(entry.getKey(), entry.getValue().getCount(), entry.getValue().getLargestConnectedGroupSize()));
+        }
+        for (Map.Entry<Integer, ViewableFacesLayer> entry : visibleFaceMapNegX.entrySet()) {
+            visibleFaceNegX.add(new VisibleFaces2(entry.getKey(), entry.getValue().getCount(), entry.getValue().getLargestConnectedGroupSize()));
+        }
+        for (Map.Entry<Integer, ViewableFacesLayer> entry : visibleFaceMapPosY.entrySet()) {
+            visibleFacePosY.add(new VisibleFaces2(entry.getKey(), entry.getValue().getCount(), entry.getValue().getLargestConnectedGroupSize()));
+        }
+        for (Map.Entry<Integer, ViewableFacesLayer> entry : visibleFaceMapNegY.entrySet()) {
+            visibleFaceNegY.add(new VisibleFaces2(entry.getKey(), entry.getValue().getCount(), entry.getValue().getLargestConnectedGroupSize()));
+        }
+        for (Map.Entry<Integer, ViewableFacesLayer> entry : visibleFaceMapPosZ.entrySet()) {
+            visibleFacePosZ.add(new VisibleFaces2(entry.getKey(), entry.getValue().getCount(), entry.getValue().getLargestConnectedGroupSize()));
+        }
+        for (Map.Entry<Integer, ViewableFacesLayer> entry : visibleFaceMapNegZ.entrySet()) {
+            visibleFaceNegZ.add(new VisibleFaces2(entry.getKey(), entry.getValue().getCount(), entry.getValue().getLargestConnectedGroupSize()));
+        }
+
+        ArrayList<String> stringList = new ArrayList<>();
+        ArrayList<String> stringListX = new ArrayList<>();
+        ArrayList<String> stringListY = new ArrayList<>();
+        ArrayList<String> stringListZ = new ArrayList<>();
+
+        stringListX.add(getCanonicalVisibleFacesString2(visibleFacePosX));
+        stringListX.add(getCanonicalVisibleFacesString2(visibleFaceNegX));
+        stringListY.add(getCanonicalVisibleFacesString2(visibleFacePosY));
+        stringListY.add(getCanonicalVisibleFacesString2(visibleFaceNegY));
+        stringListZ.add(getCanonicalVisibleFacesString2(visibleFacePosZ));
+        stringListZ.add(getCanonicalVisibleFacesString2(visibleFaceNegZ));
+
+        Collections.sort(stringListX);
+        Collections.sort(stringListY);
+        Collections.sort(stringListZ);
+
+        stringList.add(stringListX.toString());
+        stringList.add(stringListY.toString());
+        stringList.add(stringListZ.toString());
 
         Collections.sort(stringList);
 
@@ -255,11 +386,27 @@ public class Polycube {
         return list.toString();
     }
 
+    private String getCanonicalVisibleFacesString2(List<VisibleFaces2> list) {
+        for (int i = 0; i < list.size(); i++) {
+            VisibleFaces2 original = list.get(i);
+            VisibleFaces2 reversedElem = list.get(list.size() - i - 1);
+
+            int compare = original.compareTo(reversedElem);
+            if (compare < 0) {
+                return list.toString();
+            } else if (compare > 0) {
+                Collections.reverse(list);
+                return list.toString();
+            }
+        }
+        return list.toString();
+    }
+
     private boolean isNeighborEmpty(Cube cube, int dx, int dy, int dz) {
         return !cubes.contains(new Cube(cube.x() + dx, cube.y() + dy, cube.z() + dz));
     }
 
-    private String getHullFaces() {
+    private String getHullMetrics() {
         QuickHull3D quickHull = new QuickHull3D();
         Point3d[] points = new Point3d[cubes.size()];
 
@@ -269,7 +416,6 @@ public class Polycube {
         }
         try {
             quickHull.build(points);
-            //quickHull.getVertices() todo maybe i can do something with this data too
 
             return quickHull.getNumFaces() + "_" + quickHull.getNumVertices();
         } catch(Exception ignore) {
@@ -333,10 +479,8 @@ public class Polycube {
         String s = "";
 
         s += longHashCode();
-        s += getViewableFacesPerLayer();
-        if(cubes.size() > 5) {
-            s += getHullFaces();
-        }
+        s += getViewableFacesPerLayer2();
+        s += getHullMetrics();
         //s += getBensNumbers();
         //s += getNeighborCounts();
         //s += getCenterDistance();

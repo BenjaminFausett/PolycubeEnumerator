@@ -42,8 +42,8 @@ public class PolycubeEnumerator {
             double collisionRate = (1 - ((double) hashCount / polycubes.size())) * 100;
 
             DecimalFormat formatter = new DecimalFormat("#.###");
-            System.out.println("Hash Collision Rate: " + formatter.format(collisionRate) + "%");
-            System.out.println("Hash Collision Count: " + (polycubes.size() - hashCount));
+            System.out.println("Key Collision Rate: " + formatter.format(collisionRate) + "%");
+            System.out.println("Key Collision Count: " + (polycubes.size() - hashCount));
             System.out.println("Unique keys: " + hashCount);
 
             polycubeRepository.getPolycubeMap(n).values().stream().filter(list -> list.size() > 1).findFirst().ifPresent(System.out::println);

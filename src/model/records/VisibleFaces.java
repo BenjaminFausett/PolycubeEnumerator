@@ -4,7 +4,7 @@ public record VisibleFaces(int layer, int faces) implements Comparable<VisibleFa
 
     @Override
     public String toString() {
-        return String.valueOf(faces);
+        return faces + "";
     }
 
     @Override
