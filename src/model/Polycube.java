@@ -67,7 +67,7 @@ public class Polycube {
             validNewCubes.add(CubeFactory.get(cube.x(), cube.y(), (cube.z() + 1)));
         });
 
-        cubes.forEach(validNewCubes::remove);
+        validNewCubes.removeIf(cubes::contains);
         return validNewCubes;
     }
 
@@ -84,7 +84,7 @@ public class Polycube {
 
         for (Cube cube1 : cubes) {
             int manhattanDistanceSum = 0;
-            int euclideanDistanceHashSum = 0;
+            long euclideanDistanceHashSum = 0;
 
             for (Cube cube2 : cubes) {
                 int dx = Math.abs(cube1.x() - cube2.x());
